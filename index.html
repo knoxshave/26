@@ -1183,7 +1183,7 @@ async function fetchLiveData(){
 
   } catch(err){
     console.warn('Live data fetch failed, using cached data:', err.message);
-    if(chip) chip.innerHTML = `Cached — <span>live data unavailable</span>`;
+    if(chip) chip.innerHTML = `Check back soon — <span>updated regularly</span>`;
     // Still render with the hardcoded fallback data
     rebuildAll();
   }
