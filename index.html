@@ -823,14 +823,25 @@ const MEMBERS=[
   {rank:122,name:'Declan H',amount:101,pct:'0.09%',url:'https://www.worldsgreatestshave.com/fundraisers/declanh/2026'},
 ];
 
-const TOTAL=110643, GOAL=130000, RECORD=123912;
+// ─── LIVE DATA CONFIG ────────────────────────────────────
+// Replace this URL once you deploy to Vercel:
+// https://your-project-name.vercel.app/api/fundraiser
+const API_URL = 'https://26-ebon.vercel.app/api/fundraiser';
+const REFRESH_MS = 5 * 60 * 1000; // refresh every 5 minutes
+
+// Fallback values shown while loading / if API fails
+let TOTAL  = 110643;
+let GOAL   = 130000;
+let RECORD = 123912;
+let MEMBERS_LIVE = MEMBERS; // starts with hardcoded data, replaced on fetch
+
 const SHAVE_DAY=new Date('2026-03-13T09:00:00+11:00');
 const fmt=n=>'$'+Math.round(n).toLocaleString('en-AU');
 const pad=n=>String(n).padStart(2,'0');
 
 // ─── TICKER ───────────────────────────────────────────────
 function buildTicker(){
-  const top=[...MEMBERS].slice(0,6);
+  const top=[...MEMBERS_LIVE].slice(0,6);
   const items=[
     ...top.map(m=>`🏅 <strong>${m.name}</strong> — <span class="amt">${fmt(m.amount)}</span>`),
     `🏆 <strong>#1 School in NSW</strong> — World's Greatest Shave 2026`,
@@ -886,7 +897,7 @@ function buildFunStats(){
   const items=[
     {icon:'☕',val:Math.round(TOTAL/5).toLocaleString(),lbl:'Cups of coffee worth of research funded',col:'var(--orange)'},
     {icon:'🍕',val:Math.round(TOTAL/20).toLocaleString(),lbl:'Pizzas — but spent on curing cancer instead',col:'var(--red)'},
-    {icon:'💸',val:fmt(Math.round(TOTAL/MEMBERS.length)),lbl:'Average raised per Knox fundraiser',col:'var(--cyan)'},
+    {icon:'💸',val:fmt(Math.round(TOTAL/MEMBERS_LIVE.length)),lbl:'Average raised per Knox fundraiser',col:'var(--cyan)'},
     {icon:'🧬',val:'27 min',lbl:'How often someone is diagnosed with blood cancer in Australia',col:'var(--pink)'},
     {icon:'🏫',val:'#1 NSW',lbl:'Knox is the top school fundraising team in the state',col:'var(--gold)'},
     {icon:'📅',val:'32 days',lbl:'Of relentless fundraising — almost at the finish line',col:'var(--green)'},
@@ -903,13 +914,15 @@ function buildFunStats(){
 
 // ─── HOT RACES ───────────────────────────────────────────
 function buildRaces(){
+  const M=MEMBERS_LIVE;
+  if(M.length<19)return; // not enough data
   const races=[
-    {label:'#1 vs #2',icon:'🔥',cls:'rc-red',col:'var(--red)',a:MEMBERS[0],b:MEMBERS[1]},
-    {label:'#5 vs #6 — $64 apart!',icon:'⚡',cls:'rc-orange',col:'var(--orange)',a:MEMBERS[4],b:MEMBERS[5]},
-    {label:'#7 vs #8',icon:'💜',cls:'rc-purple',col:'var(--purple)',a:MEMBERS[6],b:MEMBERS[7]},
-    {label:'#9 vs #10',icon:'💎',cls:'rc-cyan',col:'var(--cyan)',a:MEMBERS[8],b:MEMBERS[9]},
-    {label:'#18 vs #19 — $2 apart!',icon:'😱',cls:'rc-pink',col:'var(--pink)',a:MEMBERS[17],b:MEMBERS[18]},
-    {label:'#16 vs #17',icon:'🎯',cls:'rc-gold',col:'var(--gold)',a:MEMBERS[15],b:MEMBERS[16]},
+    {label:'#1 vs #2',icon:'🔥',cls:'rc-red',col:'var(--red)',a:M[0],b:M[1]},
+    {label:'#5 vs #6',icon:'⚡',cls:'rc-orange',col:'var(--orange)',a:M[4],b:M[5]},
+    {label:'#7 vs #8',icon:'💜',cls:'rc-purple',col:'var(--purple)',a:M[6],b:M[7]},
+    {label:'#9 vs #10',icon:'💎',cls:'rc-cyan',col:'var(--cyan)',a:M[8],b:M[9]},
+    {label:'#18 vs #19',icon:'😱',cls:'rc-pink',col:'var(--pink)',a:M[17],b:M[18]},
+    {label:'#16 vs #17',icon:'🎯',cls:'rc-gold',col:'var(--gold)',a:M[15],b:M[16]},
   ];
   document.getElementById('racesGrid').innerHTML=races.map(r=>{
     const gap=r.a.amount-r.b.amount;
@@ -926,7 +939,7 @@ function buildRaces(){
 
 // ─── TOP 20 LEADERBOARD ──────────────────────────────────
 function buildLeaderboard(){
-  const top20=MEMBERS.slice(0,20);
+  const top20=MEMBERS_LIVE.slice(0,20);
   const maxAmt=top20[0].amount;
   const medals=['🥇','🥈','🥉'];
   const lb=document.getElementById('leaderboard');
@@ -948,7 +961,7 @@ function buildLeaderboard(){
 
 // ─── ALL FUNDRAISERS $100+ ────────────────────────────────
 function buildAllFund(){
-  const fund100=MEMBERS.filter(m=>m.amount>=100);
+  const fund100=MEMBERS_LIVE.filter(m=>m.amount>=100);
   const maxAmt=fund100[0].amount;
   document.getElementById('allFundCount').textContent=fund100.length;
   document.getElementById('allFundInner').innerHTML=
@@ -1002,15 +1015,78 @@ function toast(msg){
   setTimeout(()=>t.classList.remove('show'),4500);
 }
 
+// ─── LIVE FETCH & REFRESH ────────────────────────────────
+function rebuildAll(){
+  buildTicker();
+  renderMeta();
+  buildLeaderboard();
+  buildAllFund();
+  buildFunStats();
+  buildRaces();
+}
+
+async function fetchLiveData(){
+  // Show a subtle "refreshing" state on the nav chip
+  const chip = document.querySelector('.updated-chip');
+  if(chip) chip.innerHTML = 'Refreshing… <span>⟳</span>';
+
+  try {
+    const res  = await fetch(API_URL);
+    const data = await res.json();
+    if(data.error) throw new Error(data.error);
+
+    // Update globals
+    if(data.raised)  TOTAL = data.raised;
+    if(data.goal)    GOAL  = data.goal;
+
+    // Map API members → same shape the site uses
+    if(data.members && data.members.length > 0){
+      const apiTotal = data.raised || TOTAL;
+      MEMBERS_LIVE = data.members.map((m, i) => ({
+        rank:   i + 1,
+        name:   m.name,
+        amount: m.raised,
+        pct:    ((m.raised / apiTotal) * 100).toFixed(2) + '%',
+        url:    `https://www.worldsgreatestshave.com/fundraisers/${m.slug}/2026`,
+      }));
+    }
+
+    // Rebuild everything with fresh data
+    rebuildAll();
+
+    // Update the nav chip + hero timestamp
+    const now = new Date().toLocaleTimeString('en-AU',{hour:'2-digit',minute:'2-digit'});
+    if(chip) chip.innerHTML = `Live — updated <span>${now}</span>`;
+    const lu = document.getElementById('lastUpdated');
+    if(lu) lu.textContent = `Live data · refreshed ${now}`;
+
+    // Animate the hero amount
+    const disp = document.getElementById('amtDisplay');
+    if(disp){
+      disp.style.transition = 'opacity .3s';
+      disp.style.opacity = '0';
+      setTimeout(()=>{ disp.textContent = TOTAL.toLocaleString('en-AU'); disp.style.opacity='1'; }, 300);
+    }
+
+  } catch(err){
+    console.warn('Live data fetch failed, using cached data:', err.message);
+    if(chip) chip.innerHTML = `Cached — <span>live data unavailable</span>`;
+    // Still render with the hardcoded fallback data
+    rebuildAll();
+  }
+}
+
 // ─── INIT ────────────────────────────────────────────────
-buildTicker();
+// 1. Render immediately with hardcoded fallback data
 buildChart();
-renderMeta();
-buildLeaderboard();
-buildAllFund();
-buildFunStats();
-buildRaces();
-setTimeout(()=>toast('🏆 Knox is #1 in NSW — check back daily for updated figures!'),1500);
+rebuildAll();
+setTimeout(()=>toast('🏆 Knox is #1 in NSW — fetching live data…'),800);
+
+// 2. Then fetch live data (replaces fallback if successful)
+fetchLiveData();
+
+// 3. Auto-refresh every 5 minutes
+setInterval(fetchLiveData, REFRESH_MS);
 </script>
 </body>
 </html>
