@@ -21,34 +21,77 @@ export default async function handler(req, res) {
     const html = await response.text();
 
     // ── RAISED ──────────────────────────────────────────────
-    // The page has a "Raised" label and then the total in a nearby h3/strong.
-    // We look for the FIRST large number (>50k) that appears BEFORE the word "Goal"
+    // Try multiple strategies in order, use first that works
     let raised = null;
-    const beforeGoal = html.split(/Our Goal|goal of/i)[0];
-    const bigNums = [...beforeGoal.matchAll(/\$([\d,]+)/g)]
-      .map(m => parseInt(m[1].replace(/,/g, ''), 10))
-      .filter(n => n > 50000);
-    if (bigNums.length > 0) raised = bigNums[bigNums.length - 1]; // last big number before "Goal"
+
+    // Strategy 1: Look for "Raised" label followed by a dollar amount nearby
+    const raisedLabelMatch = html.match(/[Rr]aised[\s\S]{0,300}?\$([\d,]+)/);
+    if (raisedLabelMatch) {
+      const val = parseInt(raisedLabelMatch[1].replace(/,/g, ''), 10);
+      if (val > 1000) raised = val;
+    }
+
+    // Strategy 2: Look for dollar amount in a heading/strong near "raised"
+    if (raised === null) {
+      const matches = [...html.matchAll(/\$([\d,]+)\s*(?:<[^>]+>)*\s*[Rr]aised/g)];
+      for (const m of matches) {
+        const val = parseInt(m[1].replace(/,/g, ''), 10);
+        if (val > 1000) { raised = val; break; }
+      }
+    }
+
+    // Strategy 3: Look for JSON-LD or data attributes with a raised/total amount
+    if (raised === null) {
+      const jsonMatch = html.match(/"(?:raised|total|amount_raised|amountRaised)"\s*:\s*([\d.]+)/i);
+      if (jsonMatch) {
+        const val = Math.round(parseFloat(jsonMatch[1]));
+        if (val > 1000) raised = val;
+      }
+    }
+
+    // Strategy 4: Collect all dollar amounts, filter plausible fundraiser totals (5k-999k),
+    // exclude the goal amount, and take the most common cluster
+    if (raised === null) {
+      const goal = extractGoal(html);
+      const allAmounts = [...html.matchAll(/\$([\d,]+)/g)]
+        .map(m => parseInt(m[1].replace(/,/g, ''), 10))
+        .filter(n => n >= 5000 && n <= 999000 && n !== goal);
+
+      if (allAmounts.length > 0) {
+        // Pick the largest that's not suspiciously round (avoid static labels)
+        const candidates = allAmounts.filter(n => n % 1000 !== 0 || n > 50000);
+        if (candidates.length > 0) raised = Math.max(...candidates);
+        else raised = Math.max(...allAmounts);
+      }
+    }
 
     // ── GOAL ────────────────────────────────────────────────
-    const goalMatch = html.match(/goal of \$([\d,]+)/i);
-    const goal = goalMatch ? parseInt(goalMatch[1].replace(/,/g, ''), 10) : 100000;
+    const goal = extractGoal(html);
 
     // ── MEMBERS ─────────────────────────────────────────────
     const members = [];
-    const memberRE = /href="https:\/\/www\.worldsgreatestshave\.com\/fundraisers\/([^"/]+)\/2026"([\s\S]{0,600}?)(?=href="https:\/\/www\.worldsgreatestshave\.com\/fundraisers\/|<footer|Our Fundraising)/gi;
-
+    const memberRE = /href="https:\/\/www\.worldsgreatestshave\.com\/fundraisers\/([^"/]+)\/2026"([\s\S]{0,800}?)(?=href="https:\/\/www\.worldsgreatestshave\.com\/fundraisers\/|<footer|Our Fundraising)/gi;
     let m;
     while ((m = memberRE.exec(html)) !== null) {
       const slug = m[1];
       const block = m[2];
 
-      const nameMatch = block.match(/<h3[^>]*>\s*([\s\S]{2,60}?)\s*<\/h3>/);
+      // Try multiple name patterns
+      const nameMatch =
+        block.match(/<h3[^>]*>\s*([\s\S]{2,80}?)\s*<\/h3>/) ||
+        block.match(/<h2[^>]*>\s*([\s\S]{2,80}?)\s*<\/h2>/) ||
+        block.match(/class="[^"]*name[^"]*"[^>]*>\s*([\s\S]{2,80}?)\s*</i);
+
       if (!nameMatch) continue;
       const name = nameMatch[1].replace(/<[^>]+>/g, '').trim();
       if (!name || name.length < 2) continue;
 
-      const amtMatch = block.match(/Raised so far:[\s\S]{0,150}?\$([\d,]+)/);
+      // Try multiple amount patterns
+      const amtMatch =
+        block.match(/[Rr]aised so far:?[\s\S]{0,200}?\$([\d,]+)/) ||
+        block.match(/[Rr]aised:?[\s\S]{0,100}?\$([\d,]+)/) ||
+        block.match(/\$([\d,]+)[\s\S]{0,50}?[Rr]aised/);
+
       if (!amtMatch) continue;
       const amount = parseInt(amtMatch[1].replace(/,/g, ''), 10);
       if (!amount) continue;
@@ -72,4 +115,17 @@ export default async function handler(req, res) {
     console.error(err);
     res.status(500).json({ error: err.message });
   }
+}
+
+function extractGoal(html) {
+  const patterns = [
+    /goal of \$([\d,]+)/i,
+    /[Gg]oal[^$]{0,50}\$([\d,]+)/,
+    /"goal"\s*:\s*([\d.]+)/,
+  ];
+  for (const p of patterns) {
+    const m = html.match(p);
+    if (m) return parseInt(m[1].replace(/,/g, ''), 10);
+  }
+  return 100000; // fallback
 }
