@@ -1,0 +1,1083 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Knox Grammar — World's Greatest Shave 2026</title>
+<link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@300;400;500;600;700&family=Space+Mono:wght@400;700&display=swap" rel="stylesheet">
+<style>
+*, *::before, *::after { margin:0; padding:0; box-sizing:border-box; }
+
+:root {
+  --bg: #020305;
+  --bg2: #07090f;
+  --surface: #0d1117;
+  --surface2: #111827;
+  --border: rgba(255,255,255,0.06);
+  --border-gold: rgba(255,215,0,0.2);
+  --gold: #FFD700;
+  --gold2: #FFC200;
+  --gold-dim: rgba(255,215,0,0.12);
+  --white: #ffffff;
+  --muted: #4b5563;
+  --muted2: #6b7280;
+  --green: #10b981;
+  --red: #f43f5e;
+  --blue: #3b82f6;
+  --font: 'Space Grotesk', sans-serif;
+  --mono: 'Space Mono', monospace;
+}
+
+/* CUSTOM CURSOR */
+body { cursor: none; }
+#cursor {
+  position: fixed; pointer-events: none; z-index: 9999;
+  width: 10px; height: 10px;
+  background: var(--gold);
+  border-radius: 50%;
+  transform: translate(-50%,-50%);
+  transition: transform 0.08s, width 0.2s, height 0.2s, background 0.2s;
+  mix-blend-mode: difference;
+}
+#cursor-ring {
+  position: fixed; pointer-events: none; z-index: 9998;
+  width: 36px; height: 36px;
+  border: 1px solid rgba(255,215,0,0.5);
+  border-radius: 50%;
+  transform: translate(-50%,-50%);
+  transition: transform 0.18s ease, width 0.25s, height 0.25s, border-color 0.2s;
+}
+body.cursor-hover #cursor { width: 16px; height: 16px; background: var(--white); }
+body.cursor-hover #cursor-ring { width: 52px; height: 52px; border-color: var(--gold); }
+
+html { scroll-behavior: smooth; }
+body {
+  font-family: var(--font);
+  background: var(--bg);
+  color: var(--white);
+  min-height: 100vh;
+  overflow-x: hidden;
+  line-height: 1.5;
+}
+
+/* NOISE TEXTURE */
+body::before {
+  content:''; position:fixed; inset:0; z-index:0; pointer-events:none;
+  background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 256 256' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='noise'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23noise)' opacity='0.04'/%3E%3C/svg%3E");
+  opacity: 0.4;
+}
+
+/* AMBIENT GLOW */
+.glow-orb {
+  position: fixed; pointer-events: none; z-index: 0;
+  border-radius: 50%; filter: blur(120px); opacity: 0.12;
+}
+.glow-orb.g1 { width:600px; height:600px; background:var(--gold); top:-200px; left:-150px; }
+.glow-orb.g2 { width:400px; height:400px; background:#4338ca; bottom:-100px; right:-100px; }
+
+/* SCANLINE */
+@keyframes scanline {
+  0% { transform: translateY(-100%); }
+  100% { transform: translateY(100vh); }
+}
+.scanline {
+  position: fixed; top:0; left:0; right:0; height:2px;
+  background: linear-gradient(transparent, rgba(255,215,0,0.04), transparent);
+  animation: scanline 8s linear infinite;
+  pointer-events: none; z-index: 1;
+}
+
+.wrap {
+  position: relative; z-index: 2;
+  max-width: 1140px; margin: 0 auto; padding: 0 24px 80px;
+}
+
+/* NAV */
+nav {
+  display: flex; align-items: center; justify-content: space-between;
+  padding: 24px 0; border-bottom: 1px solid var(--border);
+  position: sticky; top: 0; z-index: 50;
+  background: rgba(2,3,5,0.85);
+  backdrop-filter: blur(20px);
+  margin: 0 -24px; padding-left: 24px; padding-right: 24px;
+}
+
+.nav-brand {
+  display: flex; align-items: center; gap: 12px;
+}
+.nav-logo {
+  width: 36px; height: 36px; border-radius: 8px;
+  background: var(--gold); display: flex; align-items: center; justify-content: center;
+  font-family: var(--mono); font-size: 13px; font-weight: 700;
+  color: #000; letter-spacing: -0.5px; flex-shrink: 0;
+  box-shadow: 0 0 20px rgba(255,215,0,0.35);
+}
+.nav-name { font-size: 14px; font-weight: 600; letter-spacing: 0.3px; }
+.nav-sub { font-size: 11px; color: var(--muted2); letter-spacing: 1px; text-transform: uppercase; }
+
+.nav-right { display: flex; align-items: center; gap: 14px; }
+
+.live-chip {
+  display: flex; align-items: center; gap: 6px;
+  font-size: 10px; font-weight: 700; letter-spacing: 2px;
+  text-transform: uppercase; color: var(--green);
+  border: 1px solid rgba(16,185,129,0.25);
+  padding: 5px 12px; border-radius: 999px;
+  background: rgba(16,185,129,0.06);
+}
+.live-chip::before {
+  content:''; width:6px; height:6px; border-radius:50%;
+  background: var(--green);
+  animation: blink 2s ease infinite;
+}
+@keyframes blink { 0%,100%{opacity:1} 50%{opacity:0.3} }
+
+.btn-refresh {
+  display: flex; align-items: center; gap: 6px;
+  background: var(--surface2); border: 1px solid var(--border);
+  color: var(--muted2); padding: 7px 16px; border-radius: 8px;
+  font-family: var(--font); font-size: 12px; font-weight: 600;
+  letter-spacing: 0.5px; cursor: pointer; transition: all 0.2s;
+}
+.btn-refresh:hover { border-color: var(--border-gold); color: var(--gold); }
+.btn-refresh:disabled { opacity: 0.4; cursor: not-allowed; }
+@keyframes spin { to { transform: rotate(360deg); } }
+.spin { animation: spin 0.8s linear infinite; display: inline-block; }
+
+/* HERO */
+.hero { padding: 64px 0 48px; }
+.hero-label {
+  font-size: 11px; letter-spacing: 4px; text-transform: uppercase;
+  color: var(--muted2); margin-bottom: 20px;
+  display: flex; align-items: center; gap: 10px;
+}
+.hero-label::before {
+  content:''; display:block; width:24px; height:1px; background:var(--muted);
+}
+
+.hero-amount {
+  font-family: var(--mono); font-size: clamp(64px, 12vw, 120px);
+  font-weight: 700; line-height: 0.9; letter-spacing: -3px;
+  color: var(--white);
+  background: linear-gradient(135deg, #fff 0%, rgba(255,215,0,0.9) 60%, #fff 100%);
+  -webkit-background-clip: text; -webkit-text-fill-color: transparent;
+  background-clip: text;
+}
+
+.hero-meta {
+  display: flex; align-items: center; gap: 24px; margin-top: 20px;
+  flex-wrap: wrap;
+}
+.hero-meta-item { font-size: 13px; color: var(--muted2); }
+.hero-meta-item strong { color: var(--white); font-weight: 600; }
+.hero-meta-sep { width:1px; height:14px; background:var(--border); }
+
+/* PROGRESS */
+.progress-wrap { margin-top: 40px; }
+.progress-header {
+  display: flex; justify-content: space-between; align-items: baseline;
+  margin-bottom: 12px;
+}
+.progress-pct {
+  font-family: var(--mono); font-size: 13px; color: var(--gold); font-weight: 700;
+}
+.progress-goal { font-size: 12px; color: var(--muted2); }
+
+.progress-track {
+  width:100%; height:4px; background: var(--surface2);
+  border-radius: 999px; position: relative; overflow: visible;
+}
+.progress-fill {
+  height:100%; border-radius:999px;
+  background: linear-gradient(90deg, var(--gold2), var(--gold));
+  transition: width 1.5s cubic-bezier(0.4,0,0.2,1);
+  position: relative;
+  box-shadow: 0 0 16px rgba(255,215,0,0.5);
+}
+.progress-fill::after {
+  content:''; position:absolute; right:0; top:50%;
+  transform: translate(50%,-50%);
+  width:10px; height:10px; border-radius:50%;
+  background: var(--gold);
+  box-shadow: 0 0 16px rgba(255,215,0,0.8);
+}
+
+.milestone-pins { position:relative; height:28px; margin-top:8px; }
+.mpin {
+  position:absolute; transform:translateX(-50%);
+  display:flex; flex-direction:column; align-items:center; gap:2px;
+}
+.mpin-line { width:1px; height:6px; background:rgba(255,255,255,0.15); }
+.mpin-label { font-size:9px; color:var(--muted); letter-spacing:1px; text-transform:uppercase; white-space:nowrap; }
+.mpin.achieved .mpin-label { color: rgba(16,185,129,0.7); }
+
+/* STATS GRID */
+.stats-grid {
+  display: grid; grid-template-columns: repeat(4,1fr); gap: 12px;
+  margin-top: 32px;
+}
+@media(max-width:700px){ .stats-grid{grid-template-columns:1fr 1fr;} }
+
+.stat-card {
+  background: var(--surface); border: 1px solid var(--border);
+  border-radius: 14px; padding: 20px 22px;
+  transition: border-color 0.2s, transform 0.2s;
+  position: relative; overflow: hidden;
+}
+.stat-card::before {
+  content:''; position:absolute; inset:0;
+  background: linear-gradient(135deg, rgba(255,215,0,0.03) 0%, transparent 60%);
+  opacity: 0; transition: opacity 0.2s;
+}
+.stat-card:hover { border-color: var(--border-gold); transform:translateY(-2px); }
+.stat-card:hover::before { opacity:1; }
+
+.stat-val {
+  font-family: var(--mono); font-size: 28px; font-weight: 700;
+  color: var(--gold); line-height: 1; letter-spacing: -1px;
+}
+.stat-label {
+  font-size: 11px; color: var(--muted2); text-transform: uppercase;
+  letter-spacing: 1px; margin-top: 6px; font-weight: 600;
+}
+.stat-delta {
+  font-size: 11px; color: var(--green); margin-top: 4px; font-weight: 600;
+}
+
+/* COUNTDOWN */
+.countdown-wrap {
+  margin-top: 32px;
+  border: 1px solid var(--border-gold);
+  border-radius: 16px; padding: 28px 32px;
+  background: linear-gradient(135deg, rgba(255,215,0,0.05), transparent);
+  display: flex; align-items: center; justify-content: space-between; gap: 24px;
+  flex-wrap: wrap;
+  position: relative; overflow: hidden;
+}
+.countdown-wrap::before {
+  content:'SHAVE DAY'; position:absolute; right:32px; top:50%;
+  transform:translateY(-50%);
+  font-family:var(--mono); font-size:80px; font-weight:700;
+  color:rgba(255,215,0,0.03); letter-spacing:-2px; pointer-events:none;
+  white-space: nowrap;
+}
+.cd-label { font-size:11px; letter-spacing:3px; text-transform:uppercase; color:var(--gold); margin-bottom:4px; }
+.cd-title { font-size:20px; font-weight:700; }
+.cd-units { display:flex; align-items:center; gap:8px; }
+.cd-unit { text-align:center; }
+.cd-num {
+  font-family:var(--mono); font-size:44px; font-weight:700; line-height:1;
+  background: var(--surface2); border:1px solid var(--border);
+  border-radius:10px; padding:6px 14px; display:block;
+  min-width:70px; text-align:center;
+}
+.cd-uname { font-size:9px; text-transform:uppercase; letter-spacing:2px; color:var(--muted); margin-top:5px; text-align:center; }
+.cd-sep { font-family:var(--mono); font-size:36px; color:var(--gold); margin-bottom:18px; }
+
+/* SECTION */
+.section { margin-top: 56px; }
+.section-head {
+  display:flex; align-items:center; gap:12px; margin-bottom:24px;
+}
+.section-head h2 {
+  font-family: var(--mono); font-size: 18px; font-weight: 700; letter-spacing: -0.5px;
+}
+.section-tag {
+  font-size:10px; font-weight:700; letter-spacing:2px; text-transform:uppercase;
+  color:#000; background:var(--gold); padding:3px 10px; border-radius:4px;
+}
+.section-line { flex:1; height:1px; background:var(--border); }
+
+/* CHART */
+.chart-card {
+  background: var(--surface); border: 1px solid var(--border);
+  border-radius: 16px; padding: 28px; position: relative; overflow: hidden;
+}
+.chart-legend {
+  display:flex; gap:20px; margin-bottom:20px; flex-wrap:wrap;
+}
+.legend-item {
+  display:flex; align-items:center; gap:7px;
+  font-size:12px; font-weight:600; color:var(--muted2);
+}
+.legend-dot { width:8px; height:8px; border-radius:50%; flex-shrink:0; }
+
+canvas#lineChart { width:100% !important; }
+
+/* MILESTONES */
+.milestones-grid { display:grid; grid-template-columns:1fr 1fr; gap:12px; }
+@media(max-width:500px){ .milestones-grid{grid-template-columns:1fr;} }
+
+.ms-card {
+  border-radius:14px; padding:24px;
+  border:1px solid var(--border);
+  background:var(--surface);
+  position:relative; overflow:hidden;
+  transition:transform 0.2s, border-color 0.2s;
+}
+.ms-card:hover { transform:translateY(-2px); }
+.ms-card.achieved { border-color:rgba(16,185,129,0.35); background:rgba(16,185,129,0.04); }
+.ms-card.next { border-color:rgba(255,215,0,0.25); background:rgba(255,215,0,0.03); }
+
+.ms-status { font-size:10px; letter-spacing:2px; text-transform:uppercase; font-weight:700; margin-bottom:10px; }
+.ms-status.done { color:var(--green); }
+.ms-status.active { color:var(--gold); }
+
+.ms-amount {
+  font-family:var(--mono); font-size:36px; font-weight:700; line-height:1; letter-spacing:-1px;
+}
+.ms-card.achieved .ms-amount { color:var(--green); }
+.ms-card.next .ms-amount { color:var(--gold); }
+
+.ms-desc { font-size:13px; color:var(--muted2); margin-top:10px; line-height:1.6; }
+.ms-desc strong { color:var(--white); }
+.ms-gap { margin-top:10px; font-size:12px; color:var(--gold); font-weight:600; }
+
+.ms-badge {
+  position:absolute; top:14px; right:14px;
+  background:var(--green); color:#000; font-size:9px; font-weight:700;
+  letter-spacing:1px; text-transform:uppercase; padding:3px 9px; border-radius:4px;
+}
+
+/* HOT RACES */
+.races-grid { display:grid; grid-template-columns:repeat(auto-fit,minmax(260px,1fr)); gap:12px; }
+.race-card {
+  background:var(--surface); border:1px solid var(--border);
+  border-radius:14px; padding:20px;
+  transition:border-color 0.2s, transform 0.2s;
+}
+.race-card:hover { border-color:rgba(255,215,0,0.25); transform:translateY(-2px); }
+
+.race-label {
+  font-size:9px; letter-spacing:2px; text-transform:uppercase;
+  color:var(--gold); font-weight:700; margin-bottom:14px;
+  display:flex; align-items:center; gap:6px;
+}
+.fire { font-size:12px; }
+
+.racer {
+  display:flex; align-items:center; justify-content:space-between;
+  padding:10px 0;
+}
+.racer + .racer { border-top:1px solid var(--border); }
+.racer-name { font-size:14px; font-weight:600; }
+.racer-amt { font-family:var(--mono); font-size:18px; font-weight:700; color:var(--gold); }
+.racer-amt.leader { color:var(--white); }
+
+.race-gap-bar { margin-top:12px; }
+.race-gap-track { height:2px; background:var(--surface2); border-radius:999px; overflow:hidden; }
+.race-gap-fill { height:100%; background:var(--red); border-radius:999px; }
+.race-gap-txt { font-size:11px; color:var(--muted2); margin-top:6px; }
+.race-gap-txt .gap-val { color:var(--red); font-weight:700; font-family:var(--mono); }
+
+/* LEADERBOARD */
+.lb-wrap {
+  background:var(--surface); border:1px solid var(--border);
+  border-radius:16px; overflow:hidden;
+}
+.lb-row {
+  display:grid; grid-template-columns:52px 1fr auto;
+  align-items:center; gap:14px; padding:14px 20px;
+  border-bottom:1px solid var(--border);
+  transition:background 0.15s;
+  cursor: default;
+}
+.lb-row:last-child { border-bottom:none; }
+.lb-row:hover { background:rgba(255,255,255,0.02); }
+.lb-row.r1 { background:rgba(255,215,0,0.06); }
+.lb-row.r2 { background:rgba(192,192,192,0.03); }
+.lb-row.r3 { background:rgba(205,127,50,0.03); }
+
+.lb-rank {
+  font-family:var(--mono); font-size:18px; font-weight:700;
+  color:var(--muted); text-align:center; line-height:1;
+}
+.r1 .lb-rank { color:var(--gold); font-size:22px; }
+.r2 .lb-rank { color:#C0C0C0; font-size:20px; }
+.r3 .lb-rank { color:#CD7F32; font-size:20px; }
+
+.lb-name { font-size:14px; font-weight:600; }
+.lb-link {
+  font-size:11px; color:var(--muted); text-decoration:none; display:block; margin-top:2px;
+  transition:color 0.15s;
+}
+.lb-link:hover { color:var(--gold); }
+
+.lb-right { text-align:right; }
+.lb-amt { font-family:var(--mono); font-size:18px; font-weight:700; color:var(--gold); }
+.r1 .lb-amt { font-size:22px; }
+
+.lb-bar-row {
+  grid-column:1/-1; margin-top:-4px;
+}
+.lb-bar-track { height:2px; background:var(--surface2); border-radius:999px; overflow:hidden; }
+.lb-bar-fill {
+  height:100%; border-radius:999px;
+  background:linear-gradient(90deg,rgba(255,215,0,0.3),rgba(255,215,0,0.7));
+  transition:width 1s;
+}
+
+.lb-more-btn {
+  width:100%; background:transparent; border:none; border-top:1px solid var(--border);
+  color:var(--muted2); padding:14px; font-family:var(--font); font-size:12px;
+  font-weight:600; letter-spacing:1px; text-transform:uppercase; cursor:pointer;
+  transition:all 0.2s;
+}
+.lb-more-btn:hover { background:rgba(255,215,0,0.03); color:var(--gold); }
+
+/* TIPS */
+.tips-grid { display:grid; grid-template-columns:repeat(auto-fit,minmax(220px,1fr)); gap:12px; }
+.tip-card {
+  background:var(--surface); border:1px solid var(--border);
+  border-radius:14px; padding:22px;
+  transition:border-color 0.2s, transform 0.2s;
+}
+.tip-card:hover { border-color:rgba(255,255,255,0.1); transform:translateY(-2px); }
+.tip-icon { font-size:24px; margin-bottom:10px; display:block; }
+.tip-title { font-size:14px; font-weight:700; margin-bottom:8px; letter-spacing:-0.3px; }
+.tip-body { font-size:12px; color:var(--muted2); line-height:1.65; }
+.tip-body strong { color:var(--white); }
+
+/* CTA */
+.cta-section {
+  margin-top:56px; text-align:center; padding:56px 32px;
+  border:1px solid var(--border-gold); border-radius:20px;
+  background:linear-gradient(135deg,rgba(255,215,0,0.05),transparent);
+  position:relative; overflow:hidden;
+}
+.cta-section::before {
+  content:''; position:absolute; inset:0;
+  background: radial-gradient(ellipse 60% 80% at 50% 0%,rgba(255,215,0,0.08),transparent);
+}
+.cta-section h2 {
+  font-family:var(--mono); font-size:clamp(28px,5vw,48px);
+  font-weight:700; letter-spacing:-1px; margin-bottom:14px; position:relative;
+}
+.cta-section p {
+  font-size:15px; color:var(--muted2); max-width:440px;
+  margin:0 auto 28px; line-height:1.7; position:relative;
+}
+.btn-donate {
+  display:inline-block;
+  background:var(--gold); color:#000;
+  font-family:var(--mono); font-size:14px; font-weight:700;
+  letter-spacing:1px; padding:16px 44px; border-radius:10px;
+  text-decoration:none; transition:all 0.2s;
+  box-shadow: 0 8px 32px rgba(255,215,0,0.25);
+  position:relative;
+}
+.btn-donate:hover { background:#ffe033; transform:translateY(-2px); box-shadow:0 12px 40px rgba(255,215,0,0.35); }
+
+/* FOOTER */
+footer {
+  margin-top:56px; border-top:1px solid var(--border);
+  padding:28px 0 0; text-align:center;
+  font-size:11px; color:var(--muted); line-height:2;
+}
+footer a { color:var(--gold); text-decoration:none; opacity:0.7; }
+footer a:hover { opacity:1; }
+
+/* TOAST */
+.toast {
+  position:fixed; bottom:24px; right:24px;
+  background:var(--surface2); border:1px solid rgba(255,215,0,0.25);
+  color:var(--white); padding:12px 20px; border-radius:10px;
+  font-size:13px; font-weight:500; z-index:999;
+  transform:translateY(80px); opacity:0;
+  transition:all 0.3s cubic-bezier(0.4,0,0.2,1);
+  max-width:320px;
+}
+.toast.show { transform:translateY(0); opacity:1; }
+
+/* LOADING */
+.loading-overlay {
+  display:none; position:fixed; inset:0;
+  background:rgba(2,3,5,0.8); backdrop-filter:blur(6px);
+  z-index:200; align-items:center; justify-content:center; flex-direction:column; gap:16px;
+}
+.loading-overlay.show { display:flex; }
+.loading-ring {
+  width:44px; height:44px;
+  border:2px solid rgba(255,215,0,0.15);
+  border-top-color:var(--gold);
+  border-radius:50%;
+  animation:spin 0.7s linear infinite;
+}
+.loading-txt { font-family:var(--mono); font-size:12px; letter-spacing:3px; color:var(--gold); }
+
+/* ANIMATIONS */
+@keyframes fadeUp { from{opacity:0;transform:translateY(20px)} to{opacity:1;transform:translateY(0)} }
+.fu { opacity:0; animation:fadeUp 0.6s ease forwards; }
+.fu1{animation-delay:.05s} .fu2{animation-delay:.12s} .fu3{animation-delay:.19s}
+.fu4{animation-delay:.26s} .fu5{animation-delay:.33s} .fu6{animation-delay:.4s}
+.fu7{animation-delay:.47s} .fu8{animation-delay:.54s}
+
+@keyframes pop { 0%,100%{transform:scale(1)} 50%{transform:scale(1.04)} }
+.pop { animation:pop 0.35s ease; }
+</style>
+</head>
+<body>
+
+<div id="cursor"></div>
+<div id="cursor-ring"></div>
+<div class="glow-orb g1"></div>
+<div class="glow-orb g2"></div>
+<div class="scanline"></div>
+
+<div class="loading-overlay" id="loadingOverlay">
+  <div class="loading-ring"></div>
+  <div class="loading-txt">FETCHING LIVE DATA</div>
+</div>
+<div class="toast" id="toast"></div>
+
+<div class="wrap">
+
+<!-- NAV -->
+<nav class="fu fu1">
+  <div class="nav-brand">
+    <div class="nav-logo">KGS</div>
+    <div>
+      <div class="nav-name">Knox Grammar School</div>
+      <div class="nav-sub">World's Greatest Shave 2026</div>
+    </div>
+  </div>
+  <div class="nav-right">
+    <div class="live-chip">Live</div>
+    <button class="btn-refresh" id="refreshBtn" onclick="loadLiveData()">
+      <span id="refreshIcon">↻</span> Refresh
+    </button>
+  </div>
+</nav>
+
+<!-- HERO -->
+<div class="hero fu fu2">
+  <div class="hero-label">Total raised for blood cancer research</div>
+  <div class="hero-amount" id="heroAmount">$<span id="amtDisplay">110,643</span></div>
+  <div class="hero-meta">
+    <div class="hero-meta-item">School record <strong>$123,912</strong></div>
+    <div class="hero-meta-sep"></div>
+    <div class="hero-meta-item">Target <strong>$130,000</strong></div>
+    <div class="hero-meta-sep"></div>
+    <div class="hero-meta-item">Goal <strong>$100,000 ✓</strong></div>
+  </div>
+
+  <!-- PROGRESS -->
+  <div class="progress-wrap">
+    <div class="progress-header">
+      <div class="progress-pct" id="pctDisplay">85.1% to $130k</div>
+      <div class="progress-goal" id="lastUpdated">–</div>
+    </div>
+    <div class="progress-track">
+      <div class="progress-fill" id="progressFill" style="width:0%"></div>
+    </div>
+    <div class="milestone-pins">
+      <div class="mpin achieved" style="left:76.9%">
+        <div class="mpin-line"></div>
+        <div class="mpin-label">$100k ✓</div>
+      </div>
+      <div class="mpin" style="left:96.2%">
+        <div class="mpin-line"></div>
+        <div class="mpin-label">$125k</div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- STATS -->
+<div class="stats-grid fu fu3">
+  <div class="stat-card">
+    <div class="stat-val" id="statNeeded">$19,357</div>
+    <div class="stat-label">Needed for $130k</div>
+  </div>
+  <div class="stat-card">
+    <div class="stat-val" id="statDays">3</div>
+    <div class="stat-label">Days to Shave Day</div>
+  </div>
+  <div class="stat-card">
+    <div class="stat-val">130+</div>
+    <div class="stat-label">Fundraisers</div>
+  </div>
+  <div class="stat-card">
+    <div class="stat-val" style="color:var(--green)">+$27,643</div>
+    <div class="stat-label">Ahead of 2025 pace</div>
+    <div class="stat-delta">Same date last year</div>
+  </div>
+</div>
+
+<!-- COUNTDOWN -->
+<div class="countdown-wrap fu fu4">
+  <div>
+    <div class="cd-label">⚡ Countdown to Shave Day</div>
+    <div class="cd-title">Thursday 13 March 2026</div>
+  </div>
+  <div class="cd-units">
+    <div class="cd-unit"><span class="cd-num" id="cdDays">03</span><div class="cd-uname">Days</div></div>
+    <div class="cd-sep">:</div>
+    <div class="cd-unit"><span class="cd-num" id="cdHrs">00</span><div class="cd-uname">Hours</div></div>
+    <div class="cd-sep">:</div>
+    <div class="cd-unit"><span class="cd-num" id="cdMins">00</span><div class="cd-uname">Mins</div></div>
+    <div class="cd-sep">:</div>
+    <div class="cd-unit"><span class="cd-num" id="cdSecs">00</span><div class="cd-uname">Secs</div></div>
+  </div>
+</div>
+
+<!-- LINE CHART -->
+<div class="section fu fu5">
+  <div class="section-head">
+    <h2>Year-on-Year Progress</h2>
+    <span class="section-tag">2024 · 2025 · 2026</span>
+    <div class="section-line"></div>
+  </div>
+  <div class="chart-card">
+    <div class="chart-legend">
+      <div class="legend-item"><div class="legend-dot" style="background:#4b5563"></div>2024</div>
+      <div class="legend-item"><div class="legend-dot" style="background:#3b82f6"></div>2025</div>
+      <div class="legend-item"><div class="legend-dot" style="background:#FFD700"></div>2026</div>
+    </div>
+    <canvas id="lineChart" height="320"></canvas>
+  </div>
+</div>
+
+<!-- MILESTONES -->
+<div class="section fu fu5">
+  <div class="section-head">
+    <h2>Milestones</h2>
+    <span class="section-tag">School Challenges</span>
+    <div class="section-line"></div>
+  </div>
+  <div class="milestones-grid">
+    <div class="ms-card achieved">
+      <div class="ms-badge">Unlocked 🎉</div>
+      <div class="ms-status done">✓ Achieved</div>
+      <div class="ms-amount">$100,000</div>
+      <div class="ms-desc"><strong>Vice Captain Miles</strong> joins the shave! We smashed this one.</div>
+    </div>
+    <div class="ms-card next" id="ms125Card">
+      <div class="ms-status active">🎯 Next Target</div>
+      <div class="ms-amount">$125,000</div>
+      <div class="ms-desc"><strong>Headmaster Mr James</strong> takes the razor. Can we get there in 3 days?</div>
+      <div class="ms-gap" id="ms125Gap">Only $14,357 away — give it everything!</div>
+    </div>
+  </div>
+</div>
+
+<!-- HOT RACES -->
+<div class="section fu fu6">
+  <div class="section-head">
+    <h2>Hot Races</h2>
+    <span class="section-tag">Neck &amp; Neck</span>
+    <div class="section-line"></div>
+  </div>
+  <div class="races-grid">
+    <div class="race-card">
+      <div class="race-label"><span class="fire">🔥</span> Top Spot Battle</div>
+      <div class="racer"><span class="racer-name">🥇 Ishan P</span><span class="racer-amt leader">$5,670</span></div>
+      <div class="racer"><span class="racer-name">Ethan K</span><span class="racer-amt">$5,494</span></div>
+      <div class="race-gap-bar">
+        <div class="race-gap-track"><div class="race-gap-fill" style="width:3.1%"></div></div>
+        <div class="race-gap-txt">Gap: <span class="gap-val">$176</span> — close enough to flip today</div>
+      </div>
+    </div>
+    <div class="race-card">
+      <div class="race-label"><span class="fire">🔥</span> Unbelievably Close</div>
+      <div class="racer"><span class="racer-name">Trevor T</span><span class="racer-amt leader">$1,602</span></div>
+      <div class="racer"><span class="racer-name">Max Chung</span><span class="racer-amt">$1,600</span></div>
+      <div class="race-gap-bar">
+        <div class="race-gap-track"><div class="race-gap-fill" style="width:0.1%"></div></div>
+        <div class="race-gap-txt">Gap: <span class="gap-val">$2</span> — ONE donation changes everything</div>
+      </div>
+    </div>
+    <div class="race-card">
+      <div class="race-label"><span class="fire">🔥</span> 10th Place Fight</div>
+      <div class="racer"><span class="racer-name">Hugh W</span><span class="racer-amt leader">$1,744</span></div>
+      <div class="racer"><span class="racer-name">Lachlan O</span><span class="racer-amt">$1,734</span></div>
+      <div class="race-gap-bar">
+        <div class="race-gap-track"><div class="race-gap-fill" style="width:0.6%"></div></div>
+        <div class="race-gap-txt">Gap: <span class="gap-val">$10</span> — share your page now</div>
+      </div>
+    </div>
+    <div class="race-card">
+      <div class="race-label"><span class="fire">🔥</span> Points Race</div>
+      <div class="racer"><span class="racer-name">Korben P</span><span class="racer-amt leader">$1,938</span></div>
+      <div class="racer"><span class="racer-name">Harold L</span><span class="racer-amt">$1,900</span></div>
+      <div class="race-gap-bar">
+        <div class="race-gap-track"><div class="race-gap-fill" style="width:2%"></div></div>
+        <div class="race-gap-txt">Gap: <span class="gap-val">$38</span> — one family donation does it</div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- LEADERBOARD -->
+<div class="section fu fu7">
+  <div class="section-head">
+    <h2>Leaderboard</h2>
+    <span class="section-tag" id="lbTag">Top 20</span>
+    <div class="section-line"></div>
+  </div>
+  <div class="lb-wrap" id="leaderboard"></div>
+</div>
+
+<!-- TIPS -->
+<div class="section fu fu8">
+  <div class="section-head">
+    <h2>3 Days Left — Make It Count</h2>
+    <div class="section-line"></div>
+  </div>
+  <div class="tips-grid">
+    <div class="tip-card">
+      <span class="tip-icon">📱</span>
+      <div class="tip-title">The 3-Text Rule</div>
+      <div class="tip-body">Don't post on stories — <strong>send 3 personal texts</strong> to grandparents, uncles, or family friends. Personal asks convert at 5× the rate of public posts.</div>
+    </div>
+    <div class="tip-card">
+      <span class="tip-icon">💼</span>
+      <div class="tip-title">Corporate Matching</div>
+      <div class="tip-body">Ask your parents: <strong>does your workplace match donations?</strong> A $500 donation becomes $1,000. Arrange it today — corporate admin takes 24+ hrs.</div>
+    </div>
+    <div class="tip-card">
+      <span class="tip-icon">📊</span>
+      <div class="tip-title">Make It Specific</div>
+      <div class="tip-body">Don't say "please donate" — say <strong>"We're $19k from $130k. 3 days left. Even $20 helps."</strong> Specific asks outperform vague ones every time.</div>
+    </div>
+    <div class="tip-card">
+      <span class="tip-icon">⏰</span>
+      <div class="tip-title">Post at 7–8pm</div>
+      <div class="tip-body">That's when parents are scrolling. <strong>Tag the leaderboard, show the total, use a countdown.</strong> One well-timed post can bring in $500+.</div>
+    </div>
+    <div class="tip-card">
+      <span class="tip-icon">🏆</span>
+      <div class="tip-title">Check the Close Races</div>
+      <div class="tip-body">Trevor and Max are <strong>$2 apart</strong>. Hugh and Lachlan are $10 apart. Tell your year group — competition drives donations fast.</div>
+    </div>
+    <div class="tip-card">
+      <span class="tip-icon">🎯</span>
+      <div class="tip-title">$125k = Headmaster Shaves</div>
+      <div class="tip-body">We're <strong>$14k away</strong>. That's 140 people donating $100 each. Tell everyone — a teacher shaving their head is unmissable.</div>
+    </div>
+  </div>
+</div>
+
+<!-- CTA -->
+<div class="cta-section fu fu8">
+  <h2>Help Us Break the Record</h2>
+  <p>170,000 Australians are living with blood cancer. 17 lose their life every day. Every dollar funds real research.</p>
+  <a href="https://www.worldsgreatestshave.com/fundraisers/knoxgrammar2026" target="_blank" class="btn-donate">Donate Now →</a>
+</div>
+
+<footer>
+  <div>Knox Grammar School · World's Greatest Shave 2026 · Shave Day: 13 March 2026</div>
+  <div>All donations support the <a href="https://www.leukaemia.org.au" target="_blank">Leukaemia Foundation</a> · Tax deductible over $2</div>
+</footer>
+
+</div><!-- /wrap -->
+
+<script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.0/chart.umd.min.js"></script>
+<script>
+// ─── CURSOR ───────────────────────────────────────────────
+const cur = document.getElementById('cursor');
+const curRing = document.getElementById('cursor-ring');
+let mx=0,my=0,rx=0,ry=0;
+document.addEventListener('mousemove', e => { mx=e.clientX; my=e.clientY; cur.style.left=mx+'px'; cur.style.top=my+'px'; });
+function animRing(){
+  rx += (mx-rx)*0.12; ry += (my-ry)*0.12;
+  curRing.style.left=rx+'px'; curRing.style.top=ry+'px';
+  requestAnimationFrame(animRing);
+}
+animRing();
+document.querySelectorAll('a,button,.stat-card,.race-card,.tip-card,.ms-card,.lb-row').forEach(el=>{
+  el.addEventListener('mouseenter',()=>document.body.classList.add('cursor-hover'));
+  el.addEventListener('mouseleave',()=>document.body.classList.remove('cursor-hover'));
+});
+
+// ─── DATA ─────────────────────────────────────────────────
+let D = {
+  total: 110643, goal: 130000, record: 123912,
+  shaveDay: new Date('2026-03-13T09:00:00+11:00'),
+  members: [
+    {name:'Ishan P',amount:5670,url:'https://www.worldsgreatestshave.com/fundraisers/ishanp/2026'},
+    {name:'Ethan K',amount:5494,url:'https://www.worldsgreatestshave.com/fundraisers/ethank/2026'},
+    {name:'Sam and Mr Leggo',amount:3473,url:'https://www.worldsgreatestshave.com/fundraisers/mrleggoandsamleggo/2026'},
+    {name:'Christian Keane',amount:2821,url:'https://www.worldsgreatestshave.com/fundraisers/christiankeane/2026'},
+    {name:'Tom M',amount:2746,url:'https://www.worldsgreatestshave.com/fundraisers/tomm/2026'},
+    {name:'Aden S',amount:2682,url:'https://www.worldsgreatestshave.com/fundraisers/adens/2026'},
+    {name:'Dylan B',amount:2482,url:'https://www.worldsgreatestshave.com/fundraisers/dylanb27662/2026'},
+    {name:'Yulsig C',amount:2397,url:'https://www.worldsgreatestshave.com/fundraisers/yulsigc/2026'},
+    {name:'Caleb K',amount:2289,url:'https://www.worldsgreatestshave.com/fundraisers/calebkwok/2026'},
+    {name:'Austin D',amount:2175,url:'https://www.worldsgreatestshave.com/fundraisers/austind28760/2026'},
+    {name:'Benjamin L',amount:2087,url:'https://www.worldsgreatestshave.com/fundraisers/benjaminl27963/2026'},
+    {name:'Mohammad A',amount:2078,url:'https://www.worldsgreatestshave.com/fundraisers/mohammada/2026'},
+    {name:'Benjamin L (2)',amount:2020,url:'https://www.worldsgreatestshave.com/fundraisers/benjaminl/2026'},
+    {name:'Korben Pitman',amount:1938,url:'https://www.worldsgreatestshave.com/fundraisers/korbenpitman/2026'},
+    {name:'Harold L',amount:1900,url:'https://www.worldsgreatestshave.com/fundraisers/haroldlau/2026'},
+    {name:'Hugh W',amount:1744,url:'https://www.worldsgreatestshave.com/fundraisers/hughw29446/2026'},
+    {name:'Lachlan O',amount:1734,url:'https://www.worldsgreatestshave.com/fundraisers/lachlanO/2026'},
+    {name:'Trevor T',amount:1602,url:'https://www.worldsgreatestshave.com/fundraisers/trevort/2026'},
+    {name:'Max Chung',amount:1600,url:'https://www.worldsgreatestshave.com/fundraisers/MaxChung/2026'},
+    {name:'Jack C',amount:1588,url:'https://www.worldsgreatestshave.com/fundraisers/jackc30093/2026'},
+    {name:'Devan G',amount:1520,url:'https://www.worldsgreatestshave.com/fundraisers/devangollakota/2026'},
+    {name:'Ethan G',amount:1478,url:'https://www.worldsgreatestshave.com/fundraisers/ethang/2026'},
+    {name:'Howard C',amount:1410,url:'https://www.worldsgreatestshave.com/fundraisers/howardc/2026'},
+    {name:'Harry Olbourne',amount:1365,url:'https://www.worldsgreatestshave.com/fundraisers/harryolbourne/2026'},
+    {name:'Nathaniel L',amount:1299,url:'https://www.worldsgreatestshave.com/fundraisers/nathaniell/2026'},
+    {name:'Lewis Christie',amount:1285,url:'https://www.worldsgreatestshave.com/fundraisers/lewisjchristie/2026'},
+    {name:'Josh K',amount:1271,url:'https://www.worldsgreatestshave.com/fundraisers/joshk/2026'},
+    {name:'Jaydon H',amount:1224,url:'https://www.worldsgreatestshave.com/fundraisers/jaydonh/2026'},
+    {name:'Freddie A',amount:1216,url:'https://www.worldsgreatestshave.com/fundraisers/freddiea/2026'},
+    {name:'Hugo G',amount:1192,url:'https://www.worldsgreatestshave.com/fundraisers/hugog/2026'},
+  ]
+};
+
+// ─── YoY CHART DATA ───────────────────────────────────────
+const chartLabels = [
+  '7/2','8/2','9/2','10/2','11/2','12/2','13/2','14/2','15/2','16/2',
+  '17/2','18/2','19/2','20/2','21/2','22/2','23/2','24/2','25/2','26/2',
+  '27/2','28/2','29/2','1/3','2/3','3/3','4/3','5/3','6/3','7/3',
+  '8/3','9/3','10/3','11/3','12/3','13/3 ✂️'
+];
+const d2024 = [
+  7860,500,2274,5426,6045,7384,8817,11169,12831,14127,
+  14557,15805,17764,18000,18334,19333,23891,24584,27574,28801,
+  30100,34492,38875,39941,41035,44341,48970,50703,54110,56406,
+  59007,63916,66563,69563,71563,81647
+];
+const d2025 = [
+  0,2000,5000,6000,10000,11000,11500,13000,16000,20000,
+  21000,24000,26000,29000,33000,40208,42000,44000,46000,50000,
+  52000,55000,56000,61538,64000,66000,68000,73000,77490,78450,
+  81000,83000,87000,96000,100000,108000
+];
+// 2026 — null where no data yet
+const d2026raw = [
+  null,null,null,null,250,1000,3253,4800,7812,11124,
+  13765,23404,27304,35495,43167,46773,53000,58000,65000,76513,
+  79098,80804,82000,83000,86000,90956,95000,98000,100000,103000,
+  105000,108000,110643,null,null,null
+];
+
+let lineChart;
+function buildChart(){
+  const ctx = document.getElementById('lineChart').getContext('2d');
+  const gridColor = 'rgba(255,255,255,0.04)';
+  const textColor = '#4b5563';
+
+  lineChart = new Chart(ctx, {
+    type: 'line',
+    data: {
+      labels: chartLabels,
+      datasets: [
+        {
+          label: '2024', data: d2024,
+          borderColor: '#374151', backgroundColor: 'transparent',
+          borderWidth: 1.5, pointRadius: 0, pointHoverRadius: 4,
+          tension: 0.4
+        },
+        {
+          label: '2025', data: d2025,
+          borderColor: '#3b82f6', backgroundColor: 'rgba(59,130,246,0.06)',
+          borderWidth: 2, pointRadius: 0, pointHoverRadius: 4,
+          tension: 0.4, fill: false
+        },
+        {
+          label: '2026', data: d2026raw,
+          borderColor: '#FFD700',
+          backgroundColor: (ctx2)=>{
+            const g = ctx2.chart.ctx.createLinearGradient(0,0,0,ctx2.chart.height);
+            g.addColorStop(0,'rgba(255,215,0,0.15)');
+            g.addColorStop(1,'rgba(255,215,0,0)');
+            return g;
+          },
+          borderWidth: 2.5, pointRadius: 0, pointHoverRadius: 5,
+          tension: 0.4, fill: true,
+          spanGaps: false
+        }
+      ]
+    },
+    options: {
+      responsive: true,
+      interaction: { mode:'index', intersect:false },
+      plugins: {
+        legend: { display:false },
+        tooltip: {
+          backgroundColor: '#111827',
+          borderColor: 'rgba(255,215,0,0.2)',
+          borderWidth: 1,
+          titleColor: '#9ca3af',
+          bodyColor: '#fff',
+          padding: 12,
+          callbacks: {
+            label: ctx2 => {
+              if(ctx2.raw==null) return null;
+              return ` ${ctx2.dataset.label}: $${ctx2.raw.toLocaleString('en-AU')}`;
+            }
+          }
+        }
+      },
+      scales: {
+        x: {
+          grid: { color: gridColor },
+          ticks: { color: textColor, font:{size:10}, maxRotation:45, autoSkip:true, maxTicksLimit:18 },
+          border: { color: gridColor }
+        },
+        y: {
+          grid: { color: gridColor },
+          ticks: {
+            color: textColor, font:{size:11},
+            callback: v => '$'+Math.round(v/1000)+'k'
+          },
+          border: { color: gridColor }
+        }
+      }
+    }
+  });
+}
+
+// ─── RENDER ───────────────────────────────────────────────
+let showAll = false;
+const fmt = n => '$'+Math.round(n).toLocaleString('en-AU');
+const pad = n => String(n).padStart(2,'0');
+
+function renderAll(){
+  const {total, goal, members} = D;
+  const pct = (total/goal)*100;
+
+  document.getElementById('amtDisplay').textContent = Math.round(total).toLocaleString('en-AU');
+  document.getElementById('heroAmount').classList.add('pop');
+  setTimeout(()=>document.getElementById('heroAmount').classList.remove('pop'),400);
+
+  document.getElementById('progressFill').style.width = Math.min(pct,100)+'%';
+  document.getElementById('pctDisplay').textContent = pct.toFixed(1)+'% to $130k';
+
+  const needed = Math.max(0, goal - total);
+  document.getElementById('statNeeded').textContent = needed > 0 ? fmt(needed) : '✓ Done!';
+
+  // 2025 pace comparison: today is 10/3, 2025 had $87,000 on 10/3
+  const pace2025 = 87000;
+  const diff2025 = total - pace2025;
+  document.querySelector('[data-pace]')?.remove();
+
+  const gap125 = Math.max(0, 125000 - total);
+  if(gap125 <= 0){
+    document.getElementById('ms125Card').classList.replace('next','achieved');
+    document.getElementById('ms125Card').querySelector('.ms-status').textContent='✓ Achieved';
+    document.getElementById('ms125Card').querySelector('.ms-status').className='ms-status done';
+    document.getElementById('ms125Gap').textContent='Unlocked! Mr James shaves! 🎉';
+  } else {
+    document.getElementById('ms125Gap').textContent=`Only ${fmt(gap125)} away — give it everything!`;
+  }
+
+  // Leaderboard
+  const sorted = [...members].sort((a,b)=>b.amount-a.amount);
+  const maxAmt = sorted[0]?.amount || 1;
+  const shown = showAll ? sorted : sorted.slice(0,20);
+  const medals=['🥇','🥈','🥉'];
+
+  const lb = document.getElementById('leaderboard');
+  lb.innerHTML='';
+
+  shown.forEach((m,i)=>{
+    const rank=i+1, rowCls=rank<=3?` r${rank}`:'';
+    const row=document.createElement('div');
+    row.className=`lb-row${rowCls}`;
+    row.innerHTML=`
+      <div class="lb-rank">${rank<=3?medals[rank-1]:rank}</div>
+      <div>
+        <div class="lb-name">${m.name}</div>
+        <a href="${m.url}" target="_blank" class="lb-link">Donate to ${m.name.split(' ')[0]} →</a>
+      </div>
+      <div class="lb-right">
+        <div class="lb-amt">${fmt(m.amount)}</div>
+      </div>
+      <div class="lb-bar-row">
+        <div class="lb-bar-track"><div class="lb-bar-fill" style="width:${(m.amount/maxAmt*100).toFixed(1)}%"></div></div>
+      </div>`;
+    lb.appendChild(row);
+  });
+
+  document.getElementById('lbTag').textContent=`Top ${shown.length}`;
+
+  if(sorted.length>20){
+    const btn=document.createElement('button');
+    btn.className='lb-more-btn';
+    btn.textContent=showAll?'Show less ↑':`Show all ${sorted.length} fundraisers ↓`;
+    btn.onclick=()=>{showAll=!showAll;renderAll();};
+    lb.appendChild(btn);
+  }
+
+  document.getElementById('lastUpdated').textContent='Updated '+new Date().toLocaleTimeString('en-AU',{hour:'2-digit',minute:'2-digit'});
+}
+
+// ─── COUNTDOWN ────────────────────────────────────────────
+function tick(){
+  const diff=Math.max(0,D.shaveDay-new Date());
+  document.getElementById('cdDays').textContent=pad(Math.floor(diff/86400000));
+  document.getElementById('cdHrs').textContent=pad(Math.floor(diff%86400000/3600000));
+  document.getElementById('cdMins').textContent=pad(Math.floor(diff%3600000/60000));
+  document.getElementById('cdSecs').textContent=pad(Math.floor(diff%60000/1000));
+}
+setInterval(tick,1000); tick();
+
+// Also set stat days
+document.getElementById('statDays').textContent=Math.floor(Math.max(0,D.shaveDay-new Date())/86400000);
+
+// ─── LIVE REFRESH ─────────────────────────────────────────
+async function loadLiveData(){
+  const btn=document.getElementById('refreshBtn');
+  const icon=document.getElementById('refreshIcon');
+  btn.disabled=true;
+  icon.innerHTML='<span class="spin">↻</span>';
+  document.getElementById('loadingOverlay').classList.add('show');
+  try{
+    const res=await fetch('https://api.anthropic.com/v1/messages',{
+      method:'POST',
+      headers:{'Content-Type':'application/json'},
+      body:JSON.stringify({
+        model:'claude-sonnet-4-20250514',max_tokens:4000,
+        tools:[{type:'web_search_20250305',name:'web_search'}],
+        messages:[{role:'user',content:`Fetch https://www.worldsgreatestshave.com/fundraisers/knoxgrammar2026 and extract all fundraising data. Return ONLY valid JSON, no markdown, exactly:
+{"total":<number>,"members":[{"name":"<string>","amount":<number>,"url":"<string>"},...]}
+Include ALL members sorted by amount descending.`}]
+      })
+    });
+    if(!res.ok) throw new Error(res.status);
+    const data=await res.json();
+    const txt=data.content.filter(b=>b.type==='text').map(b=>b.text).join('');
+    const match=txt.replace(/```json|```/g,'').trim().match(/\{[\s\S]*\}/);
+    if(!match) throw new Error('no json');
+    const parsed=JSON.parse(match[0]);
+    if(parsed.total&&Array.isArray(parsed.members)){
+      const old=D.total;
+      D.total=parsed.total;
+      D.members=parsed.members;
+      renderAll();
+      const delta=parsed.total-old;
+      toast(delta>0?`🎉 +${fmt(delta)} raised since last refresh!`:`✓ Data refreshed — ${fmt(parsed.total)}`);
+    } else throw new Error('bad shape');
+  }catch(e){
+    console.warn(e);
+    toast('⚠️ Could not fetch live data — showing last known figures');
+  }finally{
+    btn.disabled=false;
+    icon.textContent='↻';
+    document.getElementById('loadingOverlay').classList.remove('show');
+  }
+}
+
+function toast(msg){
+  const t=document.getElementById('toast');
+  t.textContent=msg; t.classList.add('show');
+  setTimeout(()=>t.classList.remove('show'),4000);
+}
+
+// ─── INIT ─────────────────────────────────────────────────
+buildChart();
+renderAll();
+
+// Animate progress bar on load
+setTimeout(()=>{
+  const pct=Math.min((D.total/D.goal)*100,100);
+  document.getElementById('progressFill').style.width=pct+'%';
+},200);
+</script>
+</body>
+</html>
