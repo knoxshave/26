@@ -1,14 +1,10 @@
 export default async function handler(req, res) {
-  // CORS — must be before anything else
   res.setHeader('Access-Control-Allow-Origin', '*');
   res.setHeader('Access-Control-Allow-Methods', 'GET, OPTIONS');
   res.setHeader('Access-Control-Allow-Headers', '*');
   res.setHeader('Cache-Control', 's-maxage=300, stale-while-revalidate');
 
-  // Handle preflight
-  if (req.method === 'OPTIONS') {
-    return res.status(200).end();
-  }
+  if (req.method === 'OPTIONS') return res.status(200).end();
 
   try {
     const response = await fetch(
@@ -21,65 +17,54 @@ export default async function handler(req, res) {
       }
     );
 
-    if (!response.ok) {
-      throw new Error(`Failed to fetch page: ${response.status}`);
-    }
-
+    if (!response.ok) throw new Error(`HTTP ${response.status}`);
     const html = await response.text();
 
-    // --- Parse raised amount ---
-    const raisedMatch = html.match(/\$\s*([\d,]+)<\/h3>\s*<\/div>\s*<div[^>]*>\s*<h4[^>]*>\s*Raised/i)
-      || html.match(/Raised[\s\S]{0,50}?\*\*\$([\d,]+)\*\*/i)
-      || html.match(/raised.*?\$\s*([\d,]+)/i);
-    
-    // More targeted: look for the specific raised block
-    const raisedMatch2 = html.match(/####\s*Raised[\s\S]{0,100}###\s*\*\*\$([\d,]+)\*\*/);
-    const raisedRaw = raisedMatch2 || html.match(/\$([\d,]{4,})/g);
-    
-    // Find all dollar amounts and pick the largest (most likely total)
-    const allAmounts = [...html.matchAll(/\$([\d,]{4,})/g)]
-      .map(m => parseInt(m[1].replace(/,/g, ''), 10))
-      .filter(n => n > 10000 && n < 500000);
-    
-    const raised = allAmounts.length > 0 ? Math.max(...allAmounts) : null;
+    // ── RAISED ──────────────────────────────────────────────
+    // Find the number right after "Raised" on the page
+    let raised = null;
+    const raisedSection = html.match(/Raised[\s\S]{0,300}/i);
+    if (raisedSection) {
+      const nearRaised = raisedSection[0].match(/\$([\d,]+)/);
+      if (nearRaised) raised = parseInt(nearRaised[1].replace(/,/g, ''), 10);
+    }
+    // Fallback: smallest number on the page between 50k-500k (the running total)
+    if (!raised || raised < 10000) {
+      const allNums = [...html.matchAll(/\$([\d,]+)/g)]
+        .map(m => parseInt(m[1].replace(/,/g, ''), 10))
+        .filter(n => n >= 50000 && n <= 500000)
+        .sort((a, b) => a - b);
+      raised = allNums[0] || null;
+    }
 
-    // --- Parse goal ---
-    const goalMatch = html.match(/goal of \$([\d,]+)/i)
-      || html.match(/Our Goal[\s\S]{0,200}?\$([\d,]+)/i);
+    // ── GOAL ────────────────────────────────────────────────
+    const goalMatch = html.match(/goal of \$([\d,]+)/i);
     const goal = goalMatch ? parseInt(goalMatch[1].replace(/,/g, ''), 10) : 100000;
 
-    // --- Parse members ---
-    // Strategy: find all fundraiser profile links with names and amounts
+    // ── MEMBERS ─────────────────────────────────────────────
     const members = [];
-    
-    // Pattern 1: href with /fundraisers/slug/2026 followed by name and raised amount
-    const memberBlocks = html.split(/(?=href="https:\/\/www\.worldsgreatestshave\.com\/fundraisers\/[^"]+\/2026")/g);
-    
-    for (const block of memberBlocks.slice(1, 150)) {
-      // Extract slug
-      const slugMatch = block.match(/href="https:\/\/www\.worldsgreatestshave\.com\/fundraisers\/([^"]+)\/2026"/);
-      if (!slugMatch) continue;
-      const slug = slugMatch[1];
-      
-      // Extract name - look for h3 tag content
-      const nameMatch = block.match(/<h3[^>]*>\s*([^<]{2,40}?)\s*<\/h3>/);
+    const memberRE = /href="https:\/\/www\.worldsgreatestshave\.com\/fundraisers\/([^"/]+)\/2026"([\s\S]{0,600}?)(?=href="https:\/\/www\.worldsgreatestshave\.com\/fundraisers\/|<footer|Our Fundraising)/gi;
+
+    let m;
+    while ((m = memberRE.exec(html)) !== null) {
+      const slug = m[1];
+      const block = m[2];
+
+      const nameMatch = block.match(/<h3[^>]*>\s*([\s\S]{2,60}?)\s*<\/h3>/);
       if (!nameMatch) continue;
-      const name = nameMatch[1].trim();
+      const name = nameMatch[1].replace(/<[^>]+>/g, '').trim();
       if (!name || name.length < 2) continue;
-      
-      // Extract raised amount
-      const amtMatch = block.match(/Raised so far:[\s\S]{0,100}?\$([\d,]+)/);
+
+      const amtMatch = block.match(/Raised so far:[\s\S]{0,150}?\$([\d,]+)/);
       if (!amtMatch) continue;
       const amount = parseInt(amtMatch[1].replace(/,/g, ''), 10);
-      if (!amount || amount <= 0) continue;
-      
-      // Avoid duplicates
-      if (!members.find(m => m.slug === slug)) {
+      if (!amount) continue;
+
+      if (!members.find(x => x.slug === slug)) {
         members.push({ name, slug, raised: amount });
       }
     }
 
-    // Sort by raised descending
     members.sort((a, b) => b.raised - a.raised);
 
     res.status(200).json({
