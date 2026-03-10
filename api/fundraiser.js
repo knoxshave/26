@@ -21,21 +21,14 @@ export default async function handler(req, res) {
     const html = await response.text();
 
     // ── RAISED ──────────────────────────────────────────────
-    // Find the number right after "Raised" on the page
+    // The page has a "Raised" label and then the total in a nearby h3/strong.
+    // We look for the FIRST large number (>50k) that appears BEFORE the word "Goal"
     let raised = null;
-    const raisedSection = html.match(/Raised[\s\S]{0,300}/i);
-    if (raisedSection) {
-      const nearRaised = raisedSection[0].match(/\$([\d,]+)/);
-      if (nearRaised) raised = parseInt(nearRaised[1].replace(/,/g, ''), 10);
-    }
-    // Fallback: smallest number on the page between 50k-500k (the running total)
-    if (!raised || raised < 10000) {
-      const allNums = [...html.matchAll(/\$([\d,]+)/g)]
-        .map(m => parseInt(m[1].replace(/,/g, ''), 10))
-        .filter(n => n >= 50000 && n <= 500000)
-        .sort((a, b) => a - b);
-      raised = allNums[0] || null;
-    }
+    const beforeGoal = html.split(/Our Goal|goal of/i)[0];
+    const bigNums = [...beforeGoal.matchAll(/\$([\d,]+)/g)]
+      .map(m => parseInt(m[1].replace(/,/g, ''), 10))
+      .filter(n => n > 50000);
+    if (bigNums.length > 0) raised = bigNums[bigNums.length - 1]; // last big number before "Goal"
 
     // ── GOAL ────────────────────────────────────────────────
     const goalMatch = html.match(/goal of \$([\d,]+)/i);
