@@ -1,0 +1,1230 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Knox Grammar WGS Dashboard 2026</title>
+<link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@300;400;500;600;700&family=Space+Mono:wght@400;700&display=swap" rel="stylesheet">
+<style>
+*,*::before,*::after{margin:0;padding:0;box-sizing:border-box}
+:root{
+  --bg:#020510;--surface:#080f1e;--surface2:#0d1628;--surface3:#111d35;
+  --border:rgba(255,255,255,0.06);
+  --gold:#FFD700;--blue:#3b82f6;--blue2:#60a5fa;--cyan:#22d3ee;
+  --purple:#a855f7;--pink:#ec4899;--green:#10b981;--red:#f43f5e;--orange:#f97316;
+  --white:#fff;--muted:#4b5563;--muted2:#6b7280;
+  --font:'Space Grotesk',sans-serif;--mono:'Space Mono',monospace;
+}
+html{scroll-behavior:smooth}
+body{font-family:var(--font);background:var(--bg);color:var(--white);min-height:100vh;overflow-x:hidden;cursor:none}
+
+#cur{position:fixed;pointer-events:none;z-index:9999;width:10px;height:10px;background:var(--cyan);border-radius:50%;transform:translate(-50%,-50%);transition:width .15s,height .15s,background .2s;mix-blend-mode:screen}
+#cur-ring{position:fixed;pointer-events:none;z-index:9998;width:38px;height:38px;border:1px solid rgba(34,211,238,.4);border-radius:50%;transform:translate(-50%,-50%);transition:width .25s,height .25s,border-color .2s}
+body.ch #cur{width:18px;height:18px;background:var(--gold)}
+body.ch #cur-ring{width:54px;height:54px;border-color:var(--gold)}
+
+.bg-layer{position:fixed;inset:0;z-index:0;pointer-events:none}
+.bg-layer::before{content:'';position:absolute;inset:0;background:
+  radial-gradient(ellipse 70% 50% at 20% 10%,rgba(59,130,246,.14) 0%,transparent 60%),
+  radial-gradient(ellipse 50% 60% at 80% 80%,rgba(168,85,247,.09) 0%,transparent 60%),
+  radial-gradient(ellipse 40% 30% at 60% 30%,rgba(34,211,238,.05) 0%,transparent 50%),
+  linear-gradient(160deg,#020510 0%,#040d1f 50%,#060a18 100%)}
+.scanline{position:fixed;top:0;left:0;right:0;height:2px;background:linear-gradient(transparent,rgba(34,211,238,.04),transparent);animation:scan 10s linear infinite;pointer-events:none;z-index:1}
+@keyframes scan{0%{transform:translateY(-10px)}100%{transform:translateY(100vh)}}
+.noise{position:fixed;inset:0;z-index:0;pointer-events:none;opacity:.2;background-image:url("data:image/svg+xml,%3Csvg viewBox='0 0 200 200' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='.85' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)' opacity='.05'/%3E%3C/svg%3E")}
+
+.wrap{position:relative;z-index:2;max-width:1160px;margin:0 auto;padding:0 24px 100px}
+
+/* NAV */
+nav{display:flex;align-items:center;justify-content:space-between;padding:20px 24px;border-bottom:1px solid var(--border);position:sticky;top:0;z-index:50;background:rgba(2,5,16,.92);backdrop-filter:blur(24px);margin:0 -24px}
+.nav-logo{width:38px;height:38px;border-radius:8px;background:linear-gradient(135deg,var(--blue),var(--cyan));display:flex;align-items:center;justify-content:center;font-family:var(--mono);font-size:12px;font-weight:700;color:#000;box-shadow:0 0 20px rgba(59,130,246,.35)}
+.nav-brand{display:flex;align-items:center;gap:12px}
+.nav-title{font-size:15px;font-weight:700}
+.nav-sub{font-size:10px;color:var(--muted2);letter-spacing:1.5px;text-transform:uppercase}
+.updated-chip{font-size:10px;color:var(--muted2);border:1px solid var(--border);padding:5px 12px;border-radius:999px;letter-spacing:.5px}
+.updated-chip span{color:var(--cyan)}
+
+/* TICKER */
+.ticker-wrap{overflow:hidden;border:1px solid var(--border);border-radius:10px;padding:11px 0;margin-top:20px;background:var(--surface2)}
+.ticker-inner{display:flex;gap:48px;white-space:nowrap;animation:ticker 35s linear infinite}
+.ticker-inner:hover{animation-play-state:paused}
+@keyframes ticker{0%{transform:translateX(0)}100%{transform:translateX(-50%)}}
+.ti{font-size:12px;color:var(--muted2);flex-shrink:0}
+.ti strong{color:var(--cyan);font-family:var(--mono)}
+.ti .amt{color:var(--green);font-weight:700;font-family:var(--mono)}
+
+/* HERO */
+.hero{padding:60px 0 40px;text-align:center}
+.hero-eyebrow{font-size:10px;letter-spacing:4px;text-transform:uppercase;color:var(--cyan);margin-bottom:16px;display:flex;align-items:center;justify-content:center;gap:10px}
+.hero-eyebrow::before,.hero-eyebrow::after{content:'';width:40px;height:1px;background:var(--cyan);opacity:.4}
+.hero-amount{font-family:var(--mono);font-size:clamp(60px,12vw,120px);font-weight:700;line-height:.9;letter-spacing:-3px;background:linear-gradient(135deg,#fff 0%,var(--cyan) 40%,var(--blue2) 70%,var(--gold) 100%);-webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text;margin-bottom:16px}
+.hero-meta{display:flex;align-items:center;justify-content:center;gap:20px;flex-wrap:wrap;font-size:13px;color:var(--muted2)}
+.hero-meta strong{color:var(--white);font-weight:600}
+.hero-meta-sep{width:1px;height:14px;background:var(--border)}
+.progress-wrap{margin-top:32px}
+.progress-header{display:flex;justify-content:space-between;align-items:baseline;margin-bottom:10px}
+.progress-pct{font-family:var(--mono);font-size:13px;color:var(--cyan);font-weight:700}
+.progress-track{width:100%;height:6px;background:var(--surface2);border-radius:999px;position:relative}
+.progress-fill{height:100%;border-radius:999px;background:linear-gradient(90deg,var(--blue),var(--cyan),var(--green));transition:width 1.5s cubic-bezier(.4,0,.2,1);position:relative;box-shadow:0 0 20px rgba(34,211,238,.4)}
+.progress-fill::after{content:'';position:absolute;right:0;top:50%;transform:translate(50%,-50%);width:12px;height:12px;border-radius:50%;background:var(--cyan);box-shadow:0 0 20px rgba(34,211,238,.9)}
+.mpin-row{position:relative;height:24px;margin-top:8px}
+.mpin{position:absolute;transform:translateX(-50%);display:flex;flex-direction:column;align-items:center;gap:2px}
+.mpin-line{width:1px;height:6px;background:rgba(255,255,255,.15)}
+.mpin-lbl{font-size:9px;color:var(--muted);letter-spacing:1px;text-transform:uppercase;white-space:nowrap}
+.mpin.ok .mpin-lbl{color:rgba(16,185,129,.7)}
+
+/* GOAL BANNER */
+.goal-banner{margin-top:32px;background:linear-gradient(135deg,rgba(16,185,129,.1),rgba(16,185,129,.03));border:1px solid rgba(16,185,129,.3);border-radius:20px;padding:32px;position:relative;overflow:hidden}
+.goal-banner::before{content:'🎉';position:absolute;font-size:130px;right:-10px;top:-20px;opacity:.07;pointer-events:none}
+.gb-lbl{font-size:10px;letter-spacing:3px;text-transform:uppercase;color:var(--green);margin-bottom:8px;font-weight:700}
+.gb-title{font-family:var(--mono);font-size:clamp(20px,4vw,34px);font-weight:700;letter-spacing:-1px;color:var(--green);margin-bottom:10px}
+.gb-body{font-size:14px;color:var(--muted2);line-height:1.7;max-width:640px}
+.gb-body strong{color:var(--white)}
+.gb-badges{display:flex;gap:10px;flex-wrap:wrap;margin-top:16px}
+.gbb{padding:6px 16px;border-radius:8px;font-size:12px;font-weight:700;letter-spacing:.5px;border:1px solid}
+.gbb.g{background:rgba(16,185,129,.15);border-color:rgba(16,185,129,.4);color:var(--green)}
+.gbb.b{background:rgba(59,130,246,.12);border-color:rgba(59,130,246,.3);color:var(--blue2)}
+.gbb.gold{background:rgba(255,215,0,.1);border-color:rgba(255,215,0,.3);color:var(--gold)}
+
+/* #1 IN STATE BANNER */
+.state-banner{margin-top:0;background:linear-gradient(135deg,rgba(255,215,0,.12),rgba(249,115,22,.06));border:2px solid rgba(255,215,0,.4);border-radius:20px;padding:32px;position:relative;overflow:hidden;text-align:center}
+.state-banner::before{content:'🏆';position:absolute;font-size:140px;left:50%;top:50%;transform:translate(-50%,-50%);opacity:.05;pointer-events:none}
+.sb-crown{font-size:48px;margin-bottom:8px;display:block;animation:float 3s ease-in-out infinite}
+@keyframes float{0%,100%{transform:translateY(0)}50%{transform:translateY(-8px)}}
+.sb-title{font-family:var(--mono);font-size:clamp(22px,5vw,44px);font-weight:700;letter-spacing:-1px;color:var(--gold);margin-bottom:8px;text-shadow:0 0 40px rgba(255,215,0,.4)}
+.sb-sub{font-size:16px;font-weight:600;color:var(--white);margin-bottom:8px}
+.sb-body{font-size:14px;color:var(--muted2);max-width:520px;margin:0 auto;line-height:1.7}
+.sb-body strong{color:var(--white)}
+.sb-stat{display:inline-flex;align-items:center;gap:8px;margin-top:16px;background:rgba(255,215,0,.12);border:1px solid rgba(255,215,0,.35);color:var(--gold);padding:10px 24px;border-radius:10px;font-family:var(--mono);font-size:14px;font-weight:700}
+
+/* STATS */
+.stats-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:12px;margin-top:28px}
+@media(max-width:700px){.stats-grid{grid-template-columns:1fr 1fr}}
+.sc{background:var(--surface);border:1px solid var(--border);border-radius:14px;padding:20px 22px;transition:border-color .2s,transform .2s;position:relative;overflow:hidden}
+.sc::after{content:'';position:absolute;top:0;left:0;right:0;height:2px;border-radius:2px 2px 0 0}
+.sc.cc::after{background:linear-gradient(90deg,var(--cyan),transparent)}
+.sc.cp::after{background:linear-gradient(90deg,var(--purple),transparent)}
+.sc.cg::after{background:linear-gradient(90deg,var(--green),transparent)}
+.sc.co::after{background:linear-gradient(90deg,var(--orange),transparent)}
+.sc:hover{transform:translateY(-2px);border-color:rgba(255,255,255,.1)}
+.sc-val{font-family:var(--mono);font-size:26px;font-weight:700;line-height:1;letter-spacing:-1px}
+.sc-lbl{font-size:10px;color:var(--muted2);text-transform:uppercase;letter-spacing:1px;margin-top:6px;font-weight:600}
+.sc-note{font-size:11px;color:var(--muted);margin-top:4px}
+
+/* COUNTDOWN */
+.countdown{margin-top:24px;border:1px solid rgba(59,130,246,.25);border-radius:18px;padding:28px 32px;background:linear-gradient(135deg,rgba(59,130,246,.07),rgba(34,211,238,.04));display:flex;align-items:center;justify-content:space-between;gap:24px;flex-wrap:wrap;position:relative;overflow:hidden}
+.countdown::before{content:'SHAVE DAY';position:absolute;right:20px;top:50%;transform:translateY(-50%);font-family:var(--mono);font-size:64px;font-weight:700;color:rgba(59,130,246,.04);pointer-events:none;white-space:nowrap}
+.cd-lbl{font-size:10px;letter-spacing:3px;text-transform:uppercase;color:var(--cyan);margin-bottom:4px;font-weight:700}
+.cd-title{font-size:19px;font-weight:700}
+.cd-sub{font-size:12px;color:var(--muted2);margin-top:4px;line-height:1.5}
+.cd-units{display:flex;align-items:center;gap:8px}
+.cd-unit{text-align:center}
+.cd-num{font-family:var(--mono);font-size:44px;font-weight:700;background:var(--surface2);border:1px solid rgba(59,130,246,.2);border-radius:10px;padding:6px 14px;display:block;min-width:70px;line-height:1}
+.cd-uname{font-size:9px;text-transform:uppercase;letter-spacing:2px;color:var(--muted);margin-top:5px}
+.cd-sep{font-family:var(--mono);font-size:36px;color:var(--blue);margin-bottom:20px}
+
+/* ORDER ALERT */
+.order-alert{margin-top:14px;background:linear-gradient(135deg,rgba(168,85,247,.12),rgba(236,72,153,.06));border:1px solid rgba(168,85,247,.35);border-radius:14px;padding:18px 22px;display:flex;align-items:flex-start;gap:14px}
+.oa-icon{font-size:28px;flex-shrink:0;margin-top:2px}
+.oa-title{font-size:14px;font-weight:700;color:var(--white);margin-bottom:4px}
+.oa-body{font-size:13px;color:var(--muted2);line-height:1.6}
+.oa-body strong{color:var(--purple)}
+
+/* SECTION */
+.section{margin-top:56px}
+.sec-head{display:flex;align-items:center;gap:12px;margin-bottom:22px}
+.sec-head h2{font-family:var(--mono);font-size:18px;font-weight:700;letter-spacing:-.5px;white-space:nowrap}
+.sec-tag{font-size:9px;font-weight:700;letter-spacing:2px;text-transform:uppercase;padding:3px 10px;border-radius:4px}
+.t-cyan{background:rgba(34,211,238,.12);color:var(--cyan);border:1px solid rgba(34,211,238,.2)}
+.t-purple{background:rgba(168,85,247,.12);color:var(--purple);border:1px solid rgba(168,85,247,.2)}
+.t-green{background:rgba(16,185,129,.12);color:var(--green);border:1px solid rgba(16,185,129,.2)}
+.t-orange{background:rgba(249,115,22,.12);color:var(--orange);border:1px solid rgba(249,115,22,.2)}
+.t-pink{background:rgba(236,72,153,.12);color:var(--pink);border:1px solid rgba(236,72,153,.2)}
+.t-gold{background:rgba(255,215,0,.1);color:var(--gold);border:1px solid rgba(255,215,0,.2)}
+.t-blue{background:rgba(59,130,246,.12);color:var(--blue2);border:1px solid rgba(59,130,246,.2)}
+.t-red{background:rgba(244,63,94,.12);color:var(--red);border:1px solid rgba(244,63,94,.2)}
+.sec-line{flex:1;height:1px;background:var(--border)}
+
+/* CHART */
+.chart-card{background:var(--surface);border:1px solid var(--border);border-radius:16px;padding:28px}
+.chart-legend{display:flex;gap:20px;margin-bottom:20px;flex-wrap:wrap}
+.leg-item{display:flex;align-items:center;gap:7px;font-size:12px;font-weight:600;color:var(--muted2)}
+.leg-dot{width:10px;height:10px;border-radius:50%;flex-shrink:0}
+
+/* EVERY DOLLAR */
+.edollar{background:linear-gradient(135deg,rgba(59,130,246,.08),rgba(34,211,238,.04));border:1px solid rgba(59,130,246,.2);border-radius:20px;padding:36px;position:relative;overflow:hidden}
+.edollar::after{content:'💙';position:absolute;right:16px;top:50%;transform:translateY(-50%);font-size:100px;opacity:.06;pointer-events:none}
+.ed-title{font-family:var(--mono);font-size:clamp(20px,3.5vw,32px);font-weight:700;letter-spacing:-1px;margin-bottom:10px}
+.ed-title span{color:var(--cyan)}
+.ed-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(170px,1fr));gap:12px;margin-top:20px}
+.ed-card{background:rgba(255,255,255,.03);border:1px solid var(--border);border-radius:12px;padding:18px;text-align:center;transition:border-color .2s,transform .2s}
+.ed-card:hover{border-color:rgba(59,130,246,.3);transform:translateY(-2px)}
+.ed-amt{font-family:var(--mono);font-size:24px;font-weight:700;color:var(--cyan);letter-spacing:-1px}
+.ed-desc{font-size:12px;color:var(--muted2);margin-top:6px;line-height:1.5}
+.ed-desc strong{color:var(--white)}
+
+/* DONATE TO MATES */
+.mates-section{background:linear-gradient(135deg,rgba(168,85,247,.1),rgba(236,72,153,.05));border:1px solid rgba(168,85,247,.3);border-radius:20px;padding:36px;position:relative;overflow:hidden}
+.mates-section::before{content:'👥';position:absolute;right:20px;top:20px;font-size:80px;opacity:.07;pointer-events:none}
+.mates-title{font-family:var(--mono);font-size:clamp(20px,4vw,32px);font-weight:700;letter-spacing:-1px;margin-bottom:8px}
+.mates-title span{color:var(--purple)}
+.mates-sub{font-size:14px;color:var(--muted2);line-height:1.7;max-width:600px;margin-bottom:20px}
+.mates-sub strong{color:var(--white)}
+.mates-steps{display:grid;grid-template-columns:repeat(auto-fit,minmax(190px,1fr));gap:12px;margin-top:16px}
+.mate-step{background:rgba(255,255,255,.03);border:1px solid rgba(168,85,247,.2);border-radius:12px;padding:18px}
+.mate-num{font-family:var(--mono);font-size:26px;font-weight:700;color:var(--purple);line-height:1;margin-bottom:8px}
+.mate-title{font-size:13px;font-weight:700;margin-bottom:6px}
+.mate-body{font-size:12px;color:var(--muted2);line-height:1.6}
+.mate-body strong{color:var(--white)}
+.mates-cta{display:inline-block;margin-top:20px;background:linear-gradient(135deg,var(--purple),var(--pink));color:#fff;font-family:var(--mono);font-size:13px;font-weight:700;letter-spacing:1px;padding:14px 32px;border-radius:10px;text-decoration:none;transition:all .2s;box-shadow:0 8px 24px rgba(168,85,247,.3)}
+.mates-cta:hover{transform:translateY(-2px);box-shadow:0 12px 32px rgba(168,85,247,.4)}
+
+/* VIDEO */
+.video-section{background:var(--surface);border:1px solid var(--border);border-radius:20px;overflow:hidden}
+.vid-header{padding:28px 28px 0}
+.vid-title{font-family:var(--mono);font-size:20px;font-weight:700;letter-spacing:-.5px;margin-bottom:6px}
+.vid-sub{font-size:13px;color:var(--muted2);margin-bottom:20px}
+.vid-embed{position:relative;width:100%;padding-bottom:56.25%;background:#000;border-top:1px solid var(--border)}
+.vid-fallback{position:absolute;inset:0;display:flex;align-items:center;justify-content:center;flex-direction:column;gap:14px;background:linear-gradient(135deg,rgba(168,85,247,.1),rgba(59,130,246,.1))}
+.vid-play-btn{width:72px;height:72px;border-radius:50%;background:linear-gradient(135deg,var(--purple),var(--blue));display:flex;align-items:center;justify-content:center;font-size:26px;text-decoration:none;transition:transform .2s,box-shadow .2s;box-shadow:0 8px 32px rgba(168,85,247,.4)}
+.vid-play-btn:hover{transform:scale(1.1);box-shadow:0 12px 40px rgba(168,85,247,.6)}
+.vid-fallback-txt{font-size:14px;font-weight:600;color:var(--muted2)}
+.vid-fallback-link{font-size:12px;color:var(--purple);text-decoration:none;border:1px solid rgba(168,85,247,.3);padding:8px 20px;border-radius:8px;transition:all .2s}
+.vid-fallback-link:hover{background:rgba(168,85,247,.1);color:var(--white)}
+
+/* MILESTONES */
+.ms-grid{display:grid;grid-template-columns:1fr 1fr;gap:12px}
+@media(max-width:500px){.ms-grid{grid-template-columns:1fr}}
+.ms-card{border-radius:14px;padding:24px;border:1px solid var(--border);background:var(--surface);position:relative;overflow:hidden;transition:transform .2s}
+.ms-card:hover{transform:translateY(-2px)}
+.ms-card.achieved{border-color:rgba(16,185,129,.35);background:rgba(16,185,129,.04)}
+.ms-card.next{border-color:rgba(34,211,238,.25);background:rgba(34,211,238,.03)}
+.ms-card.far{border-color:rgba(255,215,0,.15);background:rgba(255,215,0,.02)}
+.ms-card.silver{border-color:rgba(192,192,192,.2);background:rgba(192,192,192,.02)}
+.ms-status{font-size:10px;letter-spacing:2px;text-transform:uppercase;font-weight:700;margin-bottom:10px}
+.ms-status.done{color:var(--green)}.ms-status.active{color:var(--cyan)}.ms-status.locked{color:var(--muted)}.ms-status.silver{color:#C0C0C0}
+.ms-amount{font-family:var(--mono);font-size:32px;font-weight:700;line-height:1;letter-spacing:-1px}
+.achieved .ms-amount{color:var(--green)}.next .ms-amount{color:var(--cyan)}.far .ms-amount{color:var(--gold)}.silver .ms-amount{color:#C0C0C0}
+.ms-desc{font-size:13px;color:var(--muted2);margin-top:10px;line-height:1.6}
+.ms-desc strong{color:var(--white)}
+.ms-gap{margin-top:10px;font-size:12px;font-weight:600}
+.next .ms-gap{color:var(--cyan)}.far .ms-gap{color:var(--gold)}
+.ms-badge{position:absolute;top:14px;right:14px;font-size:9px;font-weight:700;letter-spacing:1px;text-transform:uppercase;padding:3px 9px;border-radius:4px;background:var(--green);color:#000}
+
+/* HOT RACES */
+.races-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(240px,1fr));gap:12px}
+.race-card{background:var(--surface);border:1px solid var(--border);border-radius:14px;padding:20px;transition:border-color .2s,transform .2s;position:relative;overflow:hidden}
+.race-card::before{content:'';position:absolute;top:0;left:0;right:0;height:2px}
+.rc-red::before{background:linear-gradient(90deg,var(--red),transparent)}
+.rc-orange::before{background:linear-gradient(90deg,var(--orange),transparent)}
+.rc-purple::before{background:linear-gradient(90deg,var(--purple),transparent)}
+.rc-cyan::before{background:linear-gradient(90deg,var(--cyan),transparent)}
+.rc-pink::before{background:linear-gradient(90deg,var(--pink),transparent)}
+.rc-gold::before{background:linear-gradient(90deg,var(--gold),transparent)}
+.race-card:hover{transform:translateY(-2px);border-color:rgba(255,255,255,.1)}
+.race-lbl{font-size:9px;letter-spacing:2px;text-transform:uppercase;font-weight:700;margin-bottom:14px;display:flex;align-items:center;gap:6px}
+.racer{display:flex;align-items:center;justify-content:space-between;padding:9px 0}
+.racer+.racer{border-top:1px solid var(--border)}
+.racer-name{font-size:14px;font-weight:600}
+.racer-amt{font-family:var(--mono);font-size:17px;font-weight:700;color:var(--muted2)}
+.racer-amt.top{color:var(--white)}
+.gap-bar-track{height:2px;background:var(--surface2);border-radius:999px;overflow:hidden;margin-top:12px}
+.gap-bar-fill{height:100%;border-radius:999px}
+.gap-txt{font-size:11px;color:var(--muted2);margin-top:7px}
+.gap-val{font-weight:700;font-family:var(--mono)}
+
+/* TOP 20 LEADERBOARD — HYPED */
+.lb-hype{background:linear-gradient(135deg,rgba(255,215,0,.08),rgba(249,115,22,.04));border:2px solid rgba(255,215,0,.25);border-radius:20px;padding:32px 28px;margin-bottom:16px}
+.lb-hype-title{font-family:var(--mono);font-size:clamp(20px,4vw,32px);font-weight:700;letter-spacing:-1px;margin-bottom:8px}
+.lb-hype-title span{color:var(--gold)}
+.lb-hype-sub{font-size:14px;color:var(--muted2);line-height:1.7;max-width:600px;margin-bottom:20px}
+.lb-hype-sub strong{color:var(--white)}
+
+.lb-wrap{background:var(--surface);border:1px solid var(--border);border-radius:16px;overflow:hidden}
+.lb-row{display:grid;grid-template-columns:56px 1fr auto;align-items:center;gap:14px;padding:13px 20px;border-bottom:1px solid var(--border);transition:background .15s}
+.lb-row:hover{background:rgba(255,255,255,.02)}
+.lb-row.r1{background:linear-gradient(135deg,rgba(255,215,0,.1),rgba(255,215,0,.03))}
+.lb-row.r2{background:rgba(192,192,192,.04)}
+.lb-row.r3{background:rgba(205,127,50,.04)}
+.lb-rank{font-family:var(--mono);font-size:18px;font-weight:700;color:var(--muted);text-align:center;line-height:1}
+.r1 .lb-rank{color:var(--gold);font-size:24px}
+.r2 .lb-rank{color:#C0C0C0;font-size:21px}
+.r3 .lb-rank{color:#CD7F32;font-size:20px}
+.lb-name{font-size:14px;font-weight:600}
+.r1 .lb-name{font-size:16px}
+.lb-pct{font-size:10px;color:var(--muted);margin-top:2px;font-family:var(--mono)}
+.lb-link{font-size:11px;color:var(--muted);text-decoration:none;display:block;margin-top:2px;transition:color .15s}
+.lb-link:hover{color:var(--cyan)}
+.lb-right{text-align:right}
+.lb-amt{font-family:var(--mono);font-size:17px;font-weight:700;color:var(--cyan)}
+.r1 .lb-amt{color:var(--gold);font-size:21px}
+.r2 .lb-amt{color:#C0C0C0}
+.r3 .lb-amt{color:#CD7F32}
+.lb-bar-row{grid-column:1/-1;margin-top:-4px}
+.lb-bar-track{height:2px;background:var(--surface2);border-radius:999px;overflow:hidden}
+.lb-bar-fill{height:100%;border-radius:999px;background:linear-gradient(90deg,rgba(59,130,246,.4),rgba(34,211,238,.6));transition:width 1s}
+.r1 .lb-bar-fill{background:linear-gradient(90deg,var(--gold),rgba(255,215,0,.4))}
+.r2 .lb-bar-fill{background:linear-gradient(90deg,#C0C0C0,rgba(192,192,192,.3))}
+.r3 .lb-bar-fill{background:linear-gradient(90deg,#CD7F32,rgba(205,127,50,.3))}
+
+/* ALL FUNDRAISERS $100+ */
+.all-fund-toggle{width:100%;background:transparent;border:none;display:flex;align-items:center;justify-content:space-between;padding:20px 24px;color:var(--white);cursor:pointer;font-family:var(--font);font-size:15px;font-weight:700;transition:background .2s}
+.all-fund-toggle:hover{background:rgba(255,255,255,.02)}
+.toggle-arrow{font-size:20px;transition:transform .3s;color:var(--cyan)}
+.toggle-arrow.open{transform:rotate(180deg)}
+.all-fund-inner{display:none;border-top:1px solid var(--border)}
+.all-fund-inner.open{display:block}
+.fund-item{display:grid;grid-template-columns:48px 1fr auto auto auto;align-items:center;gap:10px;padding:11px 24px;border-bottom:1px solid var(--border);transition:background .15s}
+.fund-item:last-child{border-bottom:none}
+.fund-item:hover{background:rgba(255,255,255,.02)}
+.fund-rank{font-family:var(--mono);font-size:12px;color:var(--muted)}
+.fund-name{font-size:13px;font-weight:600}
+.fund-link{font-size:11px;color:var(--muted);text-decoration:none;transition:color .15s;white-space:nowrap}
+.fund-link:hover{color:var(--cyan)}
+.fund-amt{font-family:var(--mono);font-size:14px;font-weight:700;color:var(--blue2);text-align:right;white-space:nowrap}
+.fund-bar{width:60px;height:3px;background:var(--surface2);border-radius:999px;overflow:hidden}
+.fund-bar-fill{height:100%;border-radius:999px;background:var(--blue);transition:width .8s}
+.fund-count-note{padding:14px 24px;font-size:12px;color:var(--muted);border-top:1px solid var(--border);text-align:center}
+
+/* SIGN UP */
+.signup-banner{background:linear-gradient(135deg,rgba(249,115,22,.1),rgba(236,72,153,.05));border:1px solid rgba(249,115,22,.25);border-radius:20px;padding:32px;display:flex;align-items:center;justify-content:space-between;gap:20px;flex-wrap:wrap}
+.su-lbl{font-size:10px;letter-spacing:3px;text-transform:uppercase;color:var(--orange);font-weight:700;margin-bottom:8px}
+.su-title{font-family:var(--mono);font-size:clamp(18px,3.5vw,28px);font-weight:700;letter-spacing:-1px;margin-bottom:8px}
+.su-body{font-size:13px;color:var(--muted2);max-width:420px;line-height:1.7}
+.su-body strong{color:var(--white)}
+.btn-signup{display:inline-block;background:linear-gradient(135deg,var(--orange),var(--pink));color:#fff;font-family:var(--mono);font-size:13px;font-weight:700;letter-spacing:1px;padding:14px 28px;border-radius:10px;text-decoration:none;transition:all .2s;white-space:nowrap;box-shadow:0 8px 24px rgba(249,115,22,.2)}
+.btn-signup:hover{transform:translateY(-2px);box-shadow:0 12px 32px rgba(249,115,22,.35)}
+
+/* THE STATS */
+.fun-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(180px,1fr));gap:12px}
+.fun-card{background:var(--surface);border:1px solid var(--border);border-radius:14px;padding:20px;text-align:center;transition:transform .2s}
+.fun-card:hover{transform:translateY(-3px)}
+.fun-icon{font-size:30px;margin-bottom:10px;display:block}
+.fun-val{font-family:var(--mono);font-size:22px;font-weight:700;line-height:1;letter-spacing:-1px}
+.fun-lbl{font-size:11px;color:var(--muted2);margin-top:6px;text-transform:uppercase;letter-spacing:1px;line-height:1.4}
+
+/* TIPS */
+.tips-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(220px,1fr));gap:12px}
+.tip-card{background:var(--surface);border:1px solid var(--border);border-radius:14px;padding:22px;transition:border-color .2s,transform .2s}
+.tip-card:hover{border-color:rgba(255,255,255,.1);transform:translateY(-2px)}
+.tip-icon{font-size:24px;margin-bottom:10px;display:block}
+.tip-title{font-size:14px;font-weight:700;margin-bottom:8px}
+.tip-body{font-size:12px;color:var(--muted2);line-height:1.65}
+.tip-body strong{color:var(--white)}
+
+/* CTA */
+.cta-section{margin-top:56px;text-align:center;padding:56px 32px;border:1px solid rgba(34,211,238,.2);border-radius:20px;background:linear-gradient(135deg,rgba(59,130,246,.08),rgba(34,211,238,.04));position:relative;overflow:hidden}
+.cta-section::before{content:'';position:absolute;inset:0;background:radial-gradient(ellipse 60% 80% at 50% 0%,rgba(34,211,238,.07),transparent)}
+.cta-section h2{font-family:var(--mono);font-size:clamp(26px,5vw,46px);font-weight:700;letter-spacing:-1px;margin-bottom:12px;position:relative}
+.cta-section p{font-size:15px;color:var(--muted2);max-width:440px;margin:0 auto 28px;line-height:1.7;position:relative}
+.btn-donate{display:inline-block;background:linear-gradient(135deg,var(--blue),var(--cyan));color:#000;font-family:var(--mono);font-size:14px;font-weight:700;letter-spacing:1px;padding:16px 44px;border-radius:10px;text-decoration:none;transition:all .2s;box-shadow:0 8px 32px rgba(34,211,238,.2);position:relative}
+.btn-donate:hover{transform:translateY(-2px);box-shadow:0 12px 40px rgba(34,211,238,.35)}
+
+footer{margin-top:56px;border-top:1px solid var(--border);padding:28px 0 0;text-align:center;font-size:11px;color:var(--muted);line-height:2}
+footer a{color:var(--cyan);text-decoration:none;opacity:.7}
+footer a:hover{opacity:1}
+
+.toast{position:fixed;bottom:24px;right:24px;background:var(--surface2);border:1px solid rgba(34,211,238,.25);color:var(--white);padding:12px 20px;border-radius:10px;font-size:13px;font-weight:500;z-index:999;transform:translateY(80px);opacity:0;transition:all .3s cubic-bezier(.4,0,.2,1);max-width:320px}
+.toast.show{transform:translateY(0);opacity:1}
+
+@keyframes fadeUp{from{opacity:0;transform:translateY(20px)}to{opacity:1;transform:translateY(0)}}
+.fu{opacity:0;animation:fadeUp .6s ease forwards}
+.fu1{animation-delay:.05s}.fu2{animation-delay:.12s}.fu3{animation-delay:.19s}
+.fu4{animation-delay:.26s}.fu5{animation-delay:.33s}.fu6{animation-delay:.4s}
+.fu7{animation-delay:.47s}.fu8{animation-delay:.54s}.fu9{animation-delay:.61s}
+@keyframes spin{to{transform:rotate(360deg)}}
+@keyframes pop{0%,100%{transform:scale(1)}50%{transform:scale(1.04)}}
+.pop{animation:pop .35s ease}
+@keyframes glow-pulse{0%,100%{box-shadow:0 0 20px rgba(255,215,0,.3)}50%{box-shadow:0 0 40px rgba(255,215,0,.6)}}
+.glow-pulse{animation:glow-pulse 2s ease infinite}
+
+@media(max-width:600px){
+  .countdown{flex-direction:column;text-align:center}
+  .cd-units{justify-content:center}
+  .signup-banner{flex-direction:column;text-align:center}
+  .fund-item{grid-template-columns:36px 1fr auto}
+  .fund-bar,.fund-link{display:none}
+}
+/* TEAMS LEADERBOARD */
+.teams-wrap{background:var(--surface);border:1px solid var(--border);border-radius:16px;overflow:hidden}
+.teams-intro{background:linear-gradient(135deg,rgba(255,215,0,.1),rgba(249,115,22,.04));border-bottom:1px solid rgba(255,215,0,.2);padding:24px 28px}
+.teams-intro-title{font-family:var(--mono);font-size:clamp(17px,3vw,26px);font-weight:700;letter-spacing:-.5px;margin-bottom:6px}
+.teams-intro-title span{color:var(--gold)}
+.teams-intro-sub{font-size:13px;color:var(--muted2);line-height:1.6;max-width:640px}
+.teams-intro-sub strong{color:var(--white)}
+.team-row{display:grid;grid-template-columns:52px 1fr auto;align-items:center;gap:12px;padding:14px 20px;border-bottom:1px solid var(--border);transition:background .15s}
+.team-row:last-child{border-bottom:none}
+.team-row:hover{background:rgba(255,255,255,.02)}
+.team-row.tr1{background:linear-gradient(135deg,rgba(255,215,0,.12),rgba(255,215,0,.03));border-left:3px solid var(--gold)}
+.team-row.tr2{background:rgba(192,192,192,.04);border-left:3px solid #C0C0C0}
+.team-row.tr3{background:rgba(205,127,50,.04);border-left:3px solid #CD7F32}
+.team-rank-big{font-family:var(--mono);font-size:20px;font-weight:700;color:var(--muted);text-align:center}
+.tr1 .team-rank-big{color:var(--gold);font-size:26px}
+.tr2 .team-rank-big{color:#C0C0C0;font-size:22px}
+.tr3 .team-rank-big{color:#CD7F32;font-size:21px}
+.team-name-main{font-size:14px;font-weight:700}
+.tr1 .team-name-main{font-size:16px;color:var(--gold)}
+.team-name-note{font-size:11px;color:var(--muted);margin-top:2px}
+.team-amt-big{font-family:var(--mono);font-size:18px;font-weight:700;color:var(--cyan);text-align:right}
+.tr1 .team-amt-big{color:var(--gold);font-size:22px}
+.tr2 .team-amt-big{color:#C0C0C0}
+.tr3 .team-amt-big{color:#CD7F32}
+.knox-badge{display:inline-block;background:var(--gold);color:#000;font-size:9px;font-weight:800;letter-spacing:1px;padding:2px 8px;border-radius:4px;margin-left:8px;vertical-align:middle;text-transform:uppercase}
+.team-bar-row{grid-column:1/-1;padding:0 0 4px 64px}
+.team-bar-track{height:3px;background:var(--surface2);border-radius:999px;overflow:hidden}
+.team-bar-fill{height:100%;border-radius:999px;background:linear-gradient(90deg,rgba(59,130,246,.5),rgba(34,211,238,.7));transition:width 1.2s}
+.tr1 .team-bar-fill{background:linear-gradient(90deg,var(--gold),rgba(255,215,0,.5))}
+.tr2 .team-bar-fill{background:linear-gradient(90deg,#C0C0C0,rgba(192,192,192,.3))}
+.tr3 .team-bar-fill{background:linear-gradient(90deg,#CD7F32,rgba(205,127,50,.3))}
+.teams-gap-note{padding:14px 24px;font-size:12px;color:var(--muted2);border-top:1px solid var(--border);background:rgba(255,215,0,.03);text-align:center}
+.teams-gap-note strong{color:var(--gold)}
+</style>
+</head>
+<body>
+<div id="cur"></div>
+<div id="cur-ring"></div>
+<div class="bg-layer"></div>
+<div class="noise"></div>
+<div class="scanline"></div>
+<div class="toast" id="toast"></div>
+
+<div class="wrap">
+
+<!-- NAV -->
+<nav class="fu fu1">
+  <div class="nav-brand">
+    <div class="nav-logo">KGS</div>
+    <div>
+      <div class="nav-title">Knox Grammar WGS Dashboard</div>
+      <div class="nav-sub">World's Greatest Shave 2026</div>
+    </div>
+  </div>
+  <div>
+    <div class="updated-chip">Updated daily — <span>check back each day</span></div>
+  </div>
+</nav>
+
+<!-- TICKER -->
+<div class="ticker-wrap fu fu1">
+  <div class="ticker-inner" id="tickerInner"></div>
+</div>
+
+<!-- HERO -->
+<div class="hero fu fu2">
+  <div class="hero-eyebrow">Total Raised for Blood Cancer Research</div>
+  <div class="hero-amount">$<span id="amtDisplay">125,996</span></div>
+  <div class="hero-meta">
+    <div>Record BROKEN <strong style="color:var(--gold)">$125,996 🎉</strong></div>
+    <div class="hero-meta-sep"></div>
+    <div>Target <strong>$130,000</strong></div>
+    <div class="hero-meta-sep"></div>
+    <div>Original goal <strong style="color:var(--green)">$100,000 ✓</strong></div>
+    <div class="hero-meta-sep"></div>
+    <div><strong>170+</strong> participants</div>
+  </div>
+  <div class="progress-wrap">
+    <div class="progress-header">
+      <div class="progress-pct" id="pctDisplay">96.9% to $130k</div>
+      <div style="font-size:12px;color:var(--muted2)" id="lastUpdated">Updated daily</div>
+    </div>
+    <div class="progress-track">
+      <div class="progress-fill" id="progressFill" style="width:0%"></div>
+    </div>
+    <div class="mpin-row">
+      <div class="mpin ok" style="left:76.9%"><div class="mpin-line"></div><div class="mpin-lbl">$100k ✓</div></div>
+      <div class="mpin ok" style="left:95.3%"><div class="mpin-line"></div><div class="mpin-lbl">$124k REC ✓</div></div>
+    </div>
+  </div>
+</div>
+
+<!-- GOAL SMASH -->
+<div class="goal-banner fu fu2">
+  <div class="gb-lbl">🎉 Original Goal — Smashed. Record — Smashed. Chase $130k.</div>
+  <div class="gb-title">We set $100k. We broke the school record. Now we want $130k.</div>
+  <div class="gb-body">When this campaign launched, <strong>$100,000</strong> felt enormous. We cleared it. Then the school record of <strong>$123,912</strong> was in the way — and we cleared that too. With just over <strong>$4,000 left</strong> until $130k and Shave Day tomorrow, this is the final window. Give it everything.</div>
+  <div class="gb-badges">
+    <div class="gbb g">✓ $100k Goal Smashed</div>
+    <div class="gbb gold">🏆 School Record BROKEN</div>
+    <div class="gbb b">🎯 Only $4k from $130k</div>
+  </div>
+</div>
+
+<!-- RECORD BROKEN BANNER -->
+<div class="state-banner fu fu2 glow-pulse" style="background:linear-gradient(135deg,rgba(255,215,0,.18),rgba(249,115,22,.1));border-color:rgba(255,215,0,.7);margin-bottom:16px">
+  <span class="sb-crown" style="animation:float 2s ease-in-out infinite">🏆</span>
+  <div class="sb-title" style="font-size:clamp(18px,4.5vw,38px)">SCHOOL RECORD: BROKEN</div>
+  <div class="sb-sub">Knox Grammar has set a brand new all-time fundraising record.</div>
+  <div class="sb-body">The previous record was <strong>$123,912</strong>. We have now raised <strong>$125,996</strong> — surpassing it by over <strong>$2,000</strong>. This is history. And we're still going. One day left to push this to <strong>$130,000</strong>.</div>
+  <div style="display:flex;gap:12px;flex-wrap:wrap;justify-content:center;margin-top:16px">
+    <span class="sb-stat" style="background:rgba(255,215,0,.18)">🏆 New Record: $125,996</span>
+    <span class="sb-stat" style="background:rgba(249,115,22,.15);border-color:rgba(249,115,22,.5);color:var(--orange)">📈 Previous: $123,912</span>
+    <span class="sb-stat" style="background:rgba(16,185,129,.12);border-color:rgba(16,185,129,.4);color:var(--green)">✓ +$2,084 above old record</span>
+  </div>
+</div>
+
+<!-- #1 IN STATE -->
+<div class="state-banner fu fu2" style="margin-top:0">
+  <span class="sb-crown">👑</span>
+  <div class="sb-title">#1 School in NSW</div>
+  <div class="sb-sub">Knox Grammar is the top fundraising school team in the entire state.</div>
+  <div class="sb-body">Out of every school across New South Wales doing the World's Greatest Shave, <strong>Knox Grammar is ranked #1</strong>. That is not an accident. That is 170 students, their families, and this community showing up harder than anyone else. <strong>$4,004 from $130k — one final push tomorrow.</strong></div>
+  <div>
+    <span class="sb-stat">🥇 NSW #1 School Team — World's Greatest Shave 2026</span>
+  </div>
+</div>
+
+<!-- STATS -->
+<div class="stats-grid fu fu3">
+  <div class="sc cc">
+    <div class="sc-val" style="color:var(--cyan)" id="statNeeded">$4,004</div>
+    <div class="sc-lbl">Needed for $130k</div>
+    <div class="sc-note">So close — one final push!</div>
+  </div>
+  <div class="sc cp">
+    <div class="sc-val" style="color:var(--purple)" id="statDays">0</div>
+    <div class="sc-lbl">Days to Shave Day</div>
+    <div class="sc-note">Tomorrow Friday 13 March!</div>
+  </div>
+  <div class="sc cg">
+    <div class="sc-val" style="color:var(--green)">+$25,996</div>
+    <div class="sc-lbl">Ahead of 2025 pace</div>
+    <div class="sc-note">vs same date last year</div>
+  </div>
+  <div class="sc co">
+    <div class="sc-val" style="color:var(--gold)">+$2,084</div>
+    <div class="sc-lbl">Above old school record</div>
+    <div class="sc-note">Previous record: $123,912</div>
+  </div>
+</div>
+
+<!-- COUNTDOWN + ORDER ALERT -->
+<div class="countdown fu fu3">
+  <div>
+    <div class="cd-lbl">⚡ Countdown to Shave Day</div>
+    <div class="cd-title">Friday 13 March 2026</div>
+    <div class="cd-sub">Full day details dropping soon — stay tuned</div>
+  </div>
+  <div class="cd-units">
+    <div class="cd-unit"><span class="cd-num" id="cdD">03</span><div class="cd-uname">Days</div></div>
+    <div class="cd-sep">:</div>
+    <div class="cd-unit"><span class="cd-num" id="cdH">00</span><div class="cd-uname">Hours</div></div>
+    <div class="cd-sep">:</div>
+    <div class="cd-unit"><span class="cd-num" id="cdM">00</span><div class="cd-uname">Mins</div></div>
+    <div class="cd-sep">:</div>
+    <div class="cd-unit"><span class="cd-num" id="cdS">00</span><div class="cd-uname">Secs</div></div>
+  </div>
+</div>
+
+<div class="order-alert fu fu3">
+  <div class="oa-icon">✂️</div>
+  <div>
+    <div class="oa-title">Shaving Order Locked at 9pm Tonight — Shave Day is TOMORROW</div>
+    <div class="oa-body">The order in which students shave was determined by their fundraising total at <strong>9:00 PM tonight (Thursday 12 March)</strong>. The higher you raised, the sooner you shave. <strong>Shave Day is TOMORROW — Friday 13 March 2026.</strong> Make any final donations to your mates now — every dollar still counts toward the school's $130k target.</div>
+  </div>
+</div>
+
+<!-- FINAL $4K SPRINT -->
+<div class="section fu fu3">
+  <div class="sec-head"><h2>Final Sprint: $4,004 to Go</h2><span class="sec-tag t-red">🔥 Almost There</span><div class="sec-line"></div></div>
+  <div style="background:linear-gradient(135deg,rgba(244,63,94,.12),rgba(249,115,22,.06));border:2px solid rgba(244,63,94,.4);border-radius:20px;padding:36px;position:relative;overflow:hidden">
+    <div style="position:absolute;inset:0;background:radial-gradient(ellipse 70% 60% at 50% 50%,rgba(244,63,94,.04),transparent);pointer-events:none"></div>
+    <div style="font-family:var(--mono);font-size:clamp(32px,7vw,68px);font-weight:700;letter-spacing:-2px;color:var(--red);line-height:1;margin-bottom:12px">$4,004 left.</div>
+    <div style="font-size:16px;color:var(--white);font-weight:700;margin-bottom:8px">That's it. That's all that stands between Knox and $130,000.</div>
+    <div style="font-size:14px;color:var(--muted2);max-width:600px;line-height:1.7;margin-bottom:20px">We have broken the school record. We are 96.9% of the way to $130k. If every fundraiser on this page texts just one person tonight — a parent, a grandparent, an uncle, anyone — we get there. $4,004 split across 170 fundraisers is <strong style="color:var(--white)">$23.55 each</strong>. This is genuinely the easiest ask Knox has ever had to make.</div>
+    <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(160px,1fr));gap:12px;margin-bottom:24px">
+      <div style="background:rgba(255,255,255,.04);border:1px solid rgba(244,63,94,.25);border-radius:12px;padding:18px;text-align:center">
+        <div style="font-family:var(--mono);font-size:28px;font-weight:700;color:var(--red)">$4,004</div>
+        <div style="font-size:11px;color:var(--muted2);margin-top:4px;text-transform:uppercase;letter-spacing:1px">Needed for $130k</div>
+      </div>
+      <div style="background:rgba(255,255,255,.04);border:1px solid rgba(249,115,22,.25);border-radius:12px;padding:18px;text-align:center">
+        <div style="font-family:var(--mono);font-size:28px;font-weight:700;color:var(--orange)">$8,297</div>
+        <div style="font-size:11px;color:var(--muted2);margin-top:4px;text-transform:uppercase;letter-spacing:1px">Raised in last 24 hrs</div>
+      </div>
+      <div style="background:rgba(255,255,255,.04);border:1px solid rgba(16,185,129,.25);border-radius:12px;padding:18px;text-align:center">
+        <div style="font-family:var(--mono);font-size:28px;font-weight:700;color:var(--green)">96.9%</div>
+        <div style="font-size:11px;color:var(--muted2);margin-top:4px;text-transform:uppercase;letter-spacing:1px">Of $130k target</div>
+      </div>
+      <div style="background:rgba(255,255,255,.04);border:1px solid rgba(255,215,0,.25);border-radius:12px;padding:18px;text-align:center">
+        <div style="font-family:var(--mono);font-size:28px;font-weight:700;color:var(--gold)">$23.55</div>
+        <div style="font-size:11px;color:var(--muted2);margin-top:4px;text-transform:uppercase;letter-spacing:1px">Per fundraiser to hit $130k</div>
+      </div>
+    </div>
+    <a href="https://www.worldsgreatestshave.com/fundraisers/knoxgrammar2026" target="_blank" style="display:inline-block;background:linear-gradient(135deg,var(--red),var(--orange));color:#fff;font-family:var(--mono);font-size:14px;font-weight:700;letter-spacing:1px;padding:16px 40px;border-radius:10px;text-decoration:none;box-shadow:0 8px 32px rgba(244,63,94,.3);transition:all .2s">Donate Now — Final Push →</a>
+  </div>
+</div>
+
+<!-- CHART -->
+<div class="section fu fu4">
+  <div class="sec-head"><h2>Year-on-Year Race</h2><span class="sec-tag t-blue">2024 · 2025 · 2026</span><div class="sec-line"></div></div>
+  <div class="chart-card">
+    <div class="chart-legend">
+      <div class="leg-item"><div class="leg-dot" style="background:#374151"></div>2024</div>
+      <div class="leg-item"><div class="leg-dot" style="background:#818cf8"></div>2025</div>
+      <div class="leg-item"><div class="leg-dot" style="background:#22d3ee"></div>2026 — Record BROKEN 🏆</div>
+      <div class="leg-item"><div class="leg-dot" style="background:rgba(255,215,0,.5)"></div>$130k Target</div>
+    </div>
+    <canvas id="lineChart" height="300"></canvas>
+  </div>
+</div>
+
+<!-- EVERY DOLLAR -->
+<div class="section fu fu4">
+  <div class="sec-head"><h2>Every Dollar Counts</h2><span class="sec-tag t-cyan">Your impact</span><div class="sec-line"></div></div>
+  <div class="edollar">
+    <div class="ed-title">No amount is too small.<br><span>All of it is good. All of it matters.</span></div>
+    <p style="font-size:14px;color:var(--muted2);max-width:580px;line-height:1.7">170,000 Australians are living with blood cancer right now. Someone is diagnosed <strong style="color:var(--white)">every 27 minutes</strong>. Don't let "it's not enough" stop you from donating — or from asking. Every single dollar that lands in any Knox fundraiser's page goes directly to research that changes lives.</p>
+    <div class="ed-grid">
+      <div class="ed-card"><div class="ed-amt">$5</div><div class="ed-desc">Covers one hour of <strong>lab consumables</strong></div></div>
+      <div class="ed-card"><div class="ed-amt">$20</div><div class="ed-desc">Funds a <strong>blood test kit</strong> for clinical trials</div></div>
+      <div class="ed-card"><div class="ed-amt">$50</div><div class="ed-desc">Supports <strong>patient and family</strong> services</div></div>
+      <div class="ed-card"><div class="ed-amt">$100</div><div class="ed-desc">A full day of <strong>specialist research</strong></div></div>
+      <div class="ed-card"><div class="ed-amt">$250</div><div class="ed-desc">Funds <strong>bone marrow transplant</strong> research</div></div>
+      <div class="ed-card"><div class="ed-amt">Any $</div><div class="ed-desc"><strong>ALL of it is good.</strong> Just donate. It all adds up.</div></div>
+    </div>
+  </div>
+</div>
+
+<!-- DONATE TO MATES -->
+<div class="section fu fu5">
+  <div class="sec-head"><h2>Donate to Your Mates</h2><span class="sec-tag t-purple">Most Important Section</span><div class="sec-line"></div></div>
+  <div class="mates-section">
+    <div class="mates-title">Everyone you know<br><span>is on this page.</span></div>
+    <div class="mates-sub">170 Knox students put themselves out there. They signed up, they asked their families, they shaved or coloured their hair. <strong>The best thing you can do right now is find someone you know on the leaderboard and donate to them.</strong> It takes 60 seconds and it means more than you think. Shave Day is tomorrow — every dollar tonight pushes the school total closer to $130k.</div>
+    <div class="mates-steps">
+      <div class="mate-step">
+        <div class="mate-num">01</div>
+        <div class="mate-title">Find your mate below 👇</div>
+        <div class="mate-body">Scroll to the leaderboard or the full fundraiser list. <strong>All 170+ participants are listed.</strong></div>
+      </div>
+      <div class="mate-step">
+        <div class="mate-num">02</div>
+        <div class="mate-title">Click "Donate to [Name]"</div>
+        <div class="mate-body">Every card has a direct link straight to their page. <strong>One click away.</strong></div>
+      </div>
+      <div class="mate-step">
+        <div class="mate-num">03</div>
+        <div class="mate-title">Even $5 changes things</div>
+        <div class="mate-body">If 100 mates donate $5 each — that's <strong>$500 for one fundraiser.</strong> It stacks fast.</div>
+      </div>
+      <div class="mate-step">
+        <div class="mate-num">04</div>
+        <div class="mate-title">Send them a screenshot</div>
+        <div class="mate-body">Let them know. It means <strong>more than you realise.</strong> They'll remember it.</div>
+      </div>
+    </div>
+    <a href="https://www.worldsgreatestshave.com/fundraisers/knoxgrammar2026" target="_blank" class="mates-cta">Find a mate to donate to →</a>
+  </div>
+</div>
+
+<!-- LAUNCH VIDEO -->
+<div class="section fu fu5">
+  <div class="sec-head"><h2>WGS Launch Video</h2><span class="sec-tag t-pink">Watch This</span><div class="sec-line"></div></div>
+  <div class="video-section">
+    <div class="vid-header">
+      <div class="vid-title">Knox Grammar WGS 2026 Launch</div>
+      <div class="vid-sub">See why your year group went all in on the World's Greatest Shave this year.</div>
+    </div>
+    <div class="vid-embed">
+      <div class="vid-fallback">
+        <a href="https://drive.google.com/file/d/1lLMa8DtbJQeKLUjow70LDoyDsMQqfoXP/view?usp=sharing" target="_blank" class="vid-play-btn">▶</a>
+        <div class="vid-fallback-txt">Knox Grammar WGS 2026 Launch Video</div>
+        <a href="https://drive.google.com/file/d/1lLMa8DtbJQeKLUjow70LDoyDsMQqfoXP/view?usp=sharing" target="_blank" class="vid-fallback-link">Open in Google Drive →</a>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- MILESTONES -->
+<div class="section fu fu5">
+  <div class="sec-head"><h2>Milestones</h2><span class="sec-tag t-green">School Challenges</span><div class="sec-line"></div></div>
+  <div class="ms-grid">
+    <div class="ms-card achieved">
+      <div class="ms-badge">Unlocked 🎉</div>
+      <div class="ms-status done">✓ Achieved</div>
+      <div class="ms-amount">$100,000</div>
+      <div class="ms-desc"><strong>Vice Captain Miles</strong> joins the shave — smashed it comfortably.</div>
+    </div>
+    <div class="ms-card achieved" id="ms125Card">
+      <div class="ms-badge">UNLOCKED 🪒</div>
+      <div class="ms-status done">✓ Achieved</div>
+      <div class="ms-amount">$125,000</div>
+      <div class="ms-desc"><strong>Headmaster Mr James</strong> takes the razor to his head tomorrow — because you made it happen.</div>
+      <div class="ms-gap" id="ms125Gap" style="color:var(--green)">✓ Unlocked! He's shaving! 🎉</div>
+    </div>
+    <div class="ms-card next" id="ms130Card">
+      <div class="ms-status active">🎯 Final Target</div>
+      <div class="ms-amount">$130,000</div>
+      <div class="ms-desc">Our <strong>2026 school target</strong>. Only <strong>$4,004 away</strong> — the closest we've ever been with a day left.</div>
+      <div class="ms-gap" id="ms130Gap">$4,004 to go — this is within reach RIGHT NOW!</div>
+    </div>
+    <div class="ms-card achieved">
+      <div class="ms-badge">BROKEN 🏆</div>
+      <div class="ms-status done">✓ Record Smashed</div>
+      <div class="ms-amount" style="color:var(--gold)">$123,912</div>
+      <div class="ms-desc">The old Knox record is history. We are now <strong id="recordGap">$2,084 above it</strong> and climbing.</div>
+    </div>
+  </div>
+</div>
+
+<!-- THE STATS -->
+<div class="section fu fu6">
+  <div class="sec-head"><h2>The Stats</h2><span class="sec-tag t-orange">Did you know?</span><div class="sec-line"></div></div>
+  <div class="fun-grid" id="funGrid"></div>
+</div>
+
+<!-- HOT RACES -->
+<div class="section fu fu6">
+  <div class="sec-head"><h2>Hot Races</h2><span class="sec-tag t-red">Top 10 Battles</span><div class="sec-line"></div></div>
+  <div class="races-grid" id="racesGrid"></div>
+</div>
+
+<!-- TOP 20 LEADERBOARD — HYPED -->
+<div class="section fu fu7">
+  <div class="sec-head"><h2>Top 20 Leaderboard</h2><span class="sec-tag t-gold">Knox's Best</span><div class="sec-line"></div></div>
+  <div class="lb-hype">
+    <div class="lb-hype-title">These 20 people are <span>carrying the school.</span></div>
+    <div class="lb-hype-sub">The Top 20 have raised <strong>over $62,000 between them</strong> — nearly half the school's total. They've hustled harder than anyone. Find someone you know, click their donate link, and add to their total. <strong>Every dollar you give tonight directly lifts the school closer to $130k.</strong> The shaving order was locked at 9pm tonight — but donations still count.</div>
+  </div>
+  <div class="lb-wrap" id="leaderboard"></div>
+</div>
+
+<!-- ALL FUNDRAISERS $100+ -->
+<div class="section fu fu7">
+  <div class="sec-head"><h2>All Fundraisers Above $100</h2><span class="sec-tag t-cyan">Fundraising list</span><div class="sec-line"></div></div>
+  <p style="font-size:13px;color:var(--muted2);margin-bottom:16px;line-height:1.7">Every name on this list has crossed $100. That's huge — that's someone who asked, who pushed, who put themselves out there for blood cancer research. Find someone you know and donate to them.</p>
+  <div class="lb-wrap">
+    <button class="all-fund-toggle" onclick="toggleAllFund()">
+      <span>Show all fundraisers who've raised $100+ — <span id="allFundCount" style="color:var(--cyan)"></span> people</span>
+      <span class="toggle-arrow" id="toggleArrow">↓</span>
+    </button>
+    <div class="all-fund-inner" id="allFundInner"></div>
+  </div>
+</div>
+
+<!-- SIGN UP -->
+<div class="section fu fu7">
+  <div class="sec-head"><h2>Still Time to Sign Up</h2><span class="sec-tag t-orange">Join the team</span><div class="sec-line"></div></div>
+  <div class="signup-banner">
+    <div>
+      <div class="su-lbl">🚀 It's Not Too Late</div>
+      <div class="su-title">Sign up and fundraise — even now</div>
+      <div class="su-body">Shave Day is <strong>tomorrow</strong> but your fundraising page is live the moment you sign up. You don't need to raise thousands — even a small page helps the school total and gets Knox closer to $130k. <strong>You don't even need to shave.</strong></div>
+    </div>
+    <a href="https://www.worldsgreatestshave.com/register" target="_blank" class="btn-signup">Sign Up Now →</a>
+  </div>
+</div>
+
+<!-- TIPS -->
+<div class="section fu fu8">
+  <div class="sec-head"><h2>Final Day — Make History Complete</h2><div class="sec-line"></div></div>
+  <div class="tips-grid">
+    <div class="tip-card" style="border-color:rgba(168,85,247,.2)">
+      <span class="tip-icon">📱</span>
+      <div class="tip-title">The 3-Text Rule — Tonight</div>
+      <div class="tip-body">Don't just post on stories — <strong>send 3 personal texts</strong> to grandparents, uncles, or family friends. Personal asks convert at 5× the rate of public posts.</div>
+    </div>
+    <div class="tip-card" style="border-color:rgba(34,211,238,.15)">
+      <span class="tip-icon">💼</span>
+      <div class="tip-title">Corporate Matching — Last Chance</div>
+      <div class="tip-body">Ask your parents: <strong>does your workplace match donations?</strong> A $500 donation becomes $1,000. Tonight is the last window to arrange it.</div>
+    </div>
+    <div class="tip-card" style="border-color:rgba(255,215,0,.3)">
+      <span class="tip-icon">🏆</span>
+      <div class="tip-title">We Broke the Record. Now $130k.</div>
+      <div class="tip-body">We smashed the all-time Knox record of <strong>$123,912</strong>. We're at $125,996. There is <strong>$4,004 left</strong> to hit $130k. That's it. One night of effort.</div>
+    </div>
+    <div class="tip-card" style="border-color:rgba(249,115,22,.2)">
+      <span class="tip-icon">⏰</span>
+      <div class="tip-title">Post Right Now</div>
+      <div class="tip-body">Tell your year group: the record is broken, we're $4k from $130k, <strong>Shave Day is tomorrow</strong>. One post tonight with the leaderboard screenshot can bring in $500+.</div>
+    </div>
+    <div class="tip-card" style="border-color:rgba(236,72,153,.2)">
+      <span class="tip-icon">🏁</span>
+      <div class="tip-title">The $2 Race — Tell Everyone</div>
+      <div class="tip-body">Trevor T and Max Chung are <strong>$2 apart at ranks #23 and #24</strong>. That kind of thing drives instant donations. Broadcast it.</div>
+    </div>
+    <div class="tip-card" style="border-color:rgba(16,185,129,.2)">
+      <span class="tip-icon">🪒</span>
+      <div class="tip-title">Headmaster. Is. Shaving.</div>
+      <div class="tip-body">We hit $125k. Mr James is shaving his head tomorrow in front of the school. <strong>Tell literally everyone you know.</strong> That alone could bring in the final $4k.</div>
+    </div>
+  </div>
+</div>
+
+<!-- TEAMS LEADERBOARD -->
+<div class="section fu fu8">
+  <div class="sec-head"><h2>NSW Teams Leaderboard</h2><span class="sec-tag t-gold">Knox is #1</span><div class="sec-line"></div></div>
+  <div class="teams-wrap">
+    <div class="teams-intro">
+      <div class="teams-intro-title">Knox Grammar is <span>leading the state.</span> 👑</div>
+      <div class="teams-intro-sub">They're stepping up and achieving great things, all in the name of blood cancer. Out of every school, workplace, and team across NSW doing the World's Greatest Shave, <strong>Knox Grammar sits at #1</strong>. Here's how the top 10 stack up — and how far ahead Knox is.</div>
+    </div>
+    <div id="teamsLeaderboard"></div>
+    <div class="teams-gap-note">Knox leads 2nd place by <strong id="teamsGap">$19,757</strong> — record broken, $4k to $130k. Don't stop now.</div>
+  </div>
+</div>
+
+<!-- CTA -->
+<div class="cta-section fu fu9">
+  <h2>$4,004 to $130,000 — Let's Finish This</h2>
+  <p>We broke the school record. We're #1 in NSW. We have one day left and $4,004 to go. 170,000 Australians live with blood cancer. Donate now — any amount.</p>
+  <a href="https://www.worldsgreatestshave.com/fundraisers/knoxgrammar2026" target="_blank" class="btn-donate">Donate Now — Final Push →</a>
+</div>
+
+<footer>
+  <div>Knox Grammar WGS Dashboard · World's Greatest Shave 2026 · Shave Day: 13 March 2026</div>
+  <div>All donations support the <a href="https://www.leukaemia.org.au" target="_blank">Leukaemia Foundation</a> · Tax deductible over $2</div>
+  <div style="margin-top:4px;color:var(--muted)">Dashboard updated daily — <span style="color:var(--cyan)">check back each day for the latest figures</span></div>
+  <div style="margin-top:8px;font-size:10px;color:var(--muted);opacity:.5;letter-spacing:.5px">Made by LC and MKB</div>
+</footer>
+</div>
+
+<script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.0/chart.umd.min.js"></script>
+<script>
+// ─── CURSOR ────────────────────────────────────────────────
+const cur=document.getElementById('cur'),ring=document.getElementById('cur-ring');
+let mx=0,my=0,rx=0,ry=0;
+document.addEventListener('mousemove',e=>{mx=e.clientX;my=e.clientY;cur.style.left=mx+'px';cur.style.top=my+'px'});
+(function loop(){rx+=(mx-rx)*.1;ry+=(my-ry)*.1;ring.style.left=rx+'px';ring.style.top=ry+'px';requestAnimationFrame(loop)})();
+document.querySelectorAll('a,button,.sc,.race-card,.tip-card,.ms-card,.lb-row,.fund-item,.ed-card,.mate-step,.fun-card,.state-banner').forEach(el=>{
+  el.addEventListener('mouseenter',()=>document.body.classList.add('ch'));
+  el.addEventListener('mouseleave',()=>document.body.classList.remove('ch'));
+});
+
+// ─── FULL DATA ─────────────────────────────────────────────
+const MEMBERS=[
+  {rank:1,name:'Christian Keane',amount:6000,pct:'4.76%',url:'https://www.worldsgreatestshave.com/fundraisers/christiankeane/2026'},
+  {rank:2,name:'Ishan P',amount:5670,pct:'4.50%',url:'https://www.worldsgreatestshave.com/fundraisers/ishanp/2026'},
+  {rank:3,name:'Ethan K',amount:5500,pct:'4.37%',url:'https://www.worldsgreatestshave.com/fundraisers/ethank/2026'},
+  {rank:4,name:'Sam and Mr Leggo',amount:3631,pct:'2.88%',url:'https://www.worldsgreatestshave.com/fundraisers/mrleggoandsamleggo/2026'},
+  {rank:5,name:'Mohammad A',amount:3118,pct:'2.47%',url:'https://www.worldsgreatestshave.com/fundraisers/mohammada/2026'},
+  {rank:6,name:'Tom M',amount:2746,pct:'2.18%',url:'https://www.worldsgreatestshave.com/fundraisers/tomm/2026'},
+  {rank:7,name:'Aden S',amount:2682,pct:'2.13%',url:'https://www.worldsgreatestshave.com/fundraisers/adens/2026'},
+  {rank:8,name:'Dylan B',amount:2482,pct:'1.97%',url:'https://www.worldsgreatestshave.com/fundraisers/dylanb/2026'},
+  {rank:9,name:'Yulsig C',amount:2397,pct:'1.90%',url:'https://www.worldsgreatestshave.com/fundraisers/yulsigc/2026'},
+  {rank:10,name:'Austin D',amount:2333,pct:'1.85%',url:'https://www.worldsgreatestshave.com/fundraisers/austind/2026'},
+  {rank:11,name:'Caleb K',amount:2294,pct:'1.82%',url:'https://www.worldsgreatestshave.com/fundraisers/calebk/2026'},
+  {rank:12,name:'Benjamin L',amount:2126,pct:'1.69%',url:'https://www.worldsgreatestshave.com/fundraisers/benjaminl/2026'},
+  {rank:13,name:'Benjamin L (2)',amount:2087,pct:'1.66%',url:'https://www.worldsgreatestshave.com/fundraisers/benjaminl2/2026'},
+  {rank:14,name:'Korben Pitman',amount:1994,pct:'1.58%',url:'https://www.worldsgreatestshave.com/fundraisers/korbenpitman/2026'},
+  {rank:15,name:'Harold L',amount:1953,pct:'1.55%',url:'https://www.worldsgreatestshave.com/fundraisers/haroldl/2026'},
+  {rank:16,name:'Lachlan O',amount:1847,pct:'1.47%',url:'https://www.worldsgreatestshave.com/fundraisers/lachlano/2026'},
+  {rank:17,name:'Hugo G',amount:1767,pct:'1.40%',url:'https://www.worldsgreatestshave.com/fundraisers/hugog/2026'},
+  {rank:18,name:'Josh K',amount:1752,pct:'1.39%',url:'https://www.worldsgreatestshave.com/fundraisers/joshk/2026'},
+  {rank:19,name:'Hugh W',amount:1744,pct:'1.38%',url:'https://www.worldsgreatestshave.com/fundraisers/hughw/2026'},
+  {rank:20,name:'Devan G',amount:1680,pct:'1.33%',url:'https://www.worldsgreatestshave.com/fundraisers/devang/2026'},
+  {rank:21,name:'Jack C',amount:1646,pct:'1.31%',url:'https://www.worldsgreatestshave.com/fundraisers/jackc/2026'},
+  {rank:22,name:'Saxon G',amount:1612,pct:'1.28%',url:'https://www.worldsgreatestshave.com/fundraisers/saxong/2026'},
+  {rank:23,name:'Trevor T',amount:1602,pct:'1.27%',url:'https://www.worldsgreatestshave.com/fundraisers/trevort/2026'},
+  {rank:24,name:'Max Chung',amount:1600,pct:'1.27%',url:'https://www.worldsgreatestshave.com/fundraisers/maxchung/2026'},
+  {rank:25,name:'Ethan G',amount:1535,pct:'1.22%',url:'https://www.worldsgreatestshave.com/fundraisers/ethang/2026'},
+  {rank:26,name:'Harry Olbourne',amount:1503,pct:'1.19%',url:'https://www.worldsgreatestshave.com/fundraisers/harryolbourne/2026'},
+  {rank:27,name:'Howard C',amount:1410,pct:'1.12%',url:'https://www.worldsgreatestshave.com/fundraisers/howardc/2026'},
+  {rank:28,name:'Ethan Nguyen',amount:1349,pct:'1.07%',url:'https://www.worldsgreatestshave.com/fundraisers/ethannguyen/2026'},
+  {rank:29,name:'Ian and Max',amount:1332,pct:'1.06%',url:'https://www.worldsgreatestshave.com/fundraisers/ianandmax/2026'},
+  {rank:30,name:'Nathaniel L',amount:1329,pct:'1.05%',url:'https://www.worldsgreatestshave.com/fundraisers/nathaniell/2026'},
+  {rank:31,name:'Lewis Christie',amount:1290,pct:'1.02%',url:'https://www.worldsgreatestshave.com/fundraisers/lewischristie/2026'},
+  {rank:32,name:'Freddie A',amount:1280,pct:'1.02%',url:'https://www.worldsgreatestshave.com/fundraisers/freddiea/2026'},
+  {rank:33,name:'Jaydon H',amount:1224,pct:'0.97%',url:'https://www.worldsgreatestshave.com/fundraisers/jaydonh/2026'},
+  {rank:34,name:'Ollie O',amount:1155,pct:'0.92%',url:'https://www.worldsgreatestshave.com/fundraisers/ollieo/2026'},
+  {rank:35,name:'William K',amount:1129,pct:'0.90%',url:'https://www.worldsgreatestshave.com/fundraisers/williamk/2026'},
+  {rank:36,name:'Ayaan W',amount:1118,pct:'0.89%',url:'https://www.worldsgreatestshave.com/fundraisers/ayaanw/2026'},
+  {rank:37,name:'Harry D',amount:1113,pct:'0.88%',url:'https://www.worldsgreatestshave.com/fundraisers/harryd/2026'},
+  {rank:38,name:'Leo S',amount:1004,pct:'0.80%',url:'https://www.worldsgreatestshave.com/fundraisers/leos/2026'},
+  {rank:39,name:'Kellen M',amount:1002,pct:'0.80%',url:'https://www.worldsgreatestshave.com/fundraisers/kellenm/2026'},
+  {rank:40,name:'William P',amount:961,pct:'0.76%',url:'https://www.worldsgreatestshave.com/fundraisers/williamp/2026'},
+  {rank:41,name:'Alex Chen',amount:921,pct:'0.73%',url:'https://www.worldsgreatestshave.com/fundraisers/alexchen/2026'},
+  {rank:42,name:'Max K',amount:910,pct:'0.72%',url:'https://www.worldsgreatestshave.com/fundraisers/maxk/2026'},
+  {rank:43,name:'Shyan E',amount:903,pct:'0.72%',url:'https://www.worldsgreatestshave.com/fundraisers/shyane/2026'},
+  {rank:44,name:'Harry Burwood',amount:890,pct:'0.71%',url:'https://www.worldsgreatestshave.com/fundraisers/harryburwood/2026'},
+  {rank:45,name:'Nick Z',amount:866,pct:'0.69%',url:'https://www.worldsgreatestshave.com/fundraisers/nickz/2026'},
+  {rank:46,name:'Derek Z',amount:817,pct:'0.65%',url:'https://www.worldsgreatestshave.com/fundraisers/derekz/2026'},
+  {rank:47,name:'Paul C',amount:808,pct:'0.64%',url:'https://www.worldsgreatestshave.com/fundraisers/paulc/2026'},
+  {rank:48,name:'Zaynne Z',amount:806,pct:'0.64%',url:'https://www.worldsgreatestshave.com/fundraisers/zaynne/2026'},
+  {rank:49,name:'Ollie R (2)',amount:803,pct:'0.64%',url:'https://www.worldsgreatestshave.com/fundraisers/ollier2/2026'},
+  {rank:50,name:'Mitchell W',amount:791,pct:'0.63%',url:'https://www.worldsgreatestshave.com/fundraisers/mitchellw/2026'},
+  {rank:51,name:'Mani Khanna-Boyle',amount:781,pct:'0.62%',url:'https://www.worldsgreatestshave.com/fundraisers/mani/2026'},
+  {rank:52,name:'Drake Houghton',amount:772,pct:'0.61%',url:'https://www.worldsgreatestshave.com/fundraisers/drakehoughton/2026'},
+  {rank:53,name:'Kabir D',amount:762,pct:'0.60%',url:'https://www.worldsgreatestshave.com/fundraisers/kabird/2026'},
+  {rank:54,name:'Alex B',amount:746,pct:'0.59%',url:'https://www.worldsgreatestshave.com/fundraisers/alexb/2026'},
+  {rank:55,name:'Alex Z',amount:741,pct:'0.59%',url:'https://www.worldsgreatestshave.com/fundraisers/alexz/2026'},
+  {rank:56,name:'Charlie R',amount:676,pct:'0.54%',url:'https://www.worldsgreatestshave.com/fundraisers/charlier/2026'},
+  {rank:57,name:'Jackie Z (2)',amount:674,pct:'0.53%',url:'https://www.worldsgreatestshave.com/fundraisers/jackiez2/2026'},
+  {rank:58,name:'Linden C',amount:649,pct:'0.52%',url:'https://www.worldsgreatestshave.com/fundraisers/lindenc/2026'},
+  {rank:59,name:'Alex X',amount:646,pct:'0.51%',url:'https://www.worldsgreatestshave.com/fundraisers/alexx/2026'},
+  {rank:60,name:'Julian Z',amount:645,pct:'0.51%',url:'https://www.worldsgreatestshave.com/fundraisers/julianz/2026'},
+  {rank:61,name:'James P',amount:637,pct:'0.51%',url:'https://www.worldsgreatestshave.com/fundraisers/jamesp/2026'},
+  {rank:62,name:'Tony W',amount:630,pct:'0.50%',url:'https://www.worldsgreatestshave.com/fundraisers/tonyw/2026'},
+  {rank:63,name:'Danny S',amount:618,pct:'0.49%',url:'https://www.worldsgreatestshave.com/fundraisers/dannys/2026'},
+  {rank:64,name:'Jesse A',amount:596,pct:'0.47%',url:'https://www.worldsgreatestshave.com/fundraisers/jessea/2026'},
+  {rank:65,name:'Lucas M',amount:591,pct:'0.47%',url:'https://www.worldsgreatestshave.com/fundraisers/lucasm/2026'},
+  {rank:66,name:'Noah Ellis',amount:560,pct:'0.44%',url:'https://www.worldsgreatestshave.com/fundraisers/noahellis/2026'},
+  {rank:67,name:'David L',amount:560,pct:'0.44%',url:'https://www.worldsgreatestshave.com/fundraisers/davidl/2026'},
+  {rank:68,name:'Jimmy A',amount:560,pct:'0.44%',url:'https://www.worldsgreatestshave.com/fundraisers/jimmya/2026'},
+  {rank:69,name:'Aidan S',amount:557,pct:'0.44%',url:'https://www.worldsgreatestshave.com/fundraisers/aidans/2026'},
+  {rank:70,name:'Miles Phijidvijan',amount:545,pct:'0.43%',url:'https://www.worldsgreatestshave.com/fundraisers/miles/2026'},
+  {rank:71,name:'Devlin McCarthy',amount:520,pct:'0.41%',url:'https://www.worldsgreatestshave.com/fundraisers/devlinmccarthy/2026'},
+  {rank:72,name:'Benjamin W',amount:513,pct:'0.41%',url:'https://www.worldsgreatestshave.com/fundraisers/benjaminw/2026'},
+  {rank:73,name:'Jacob Cartwright',amount:502,pct:'0.40%',url:'https://www.worldsgreatestshave.com/fundraisers/jacobcartwright/2026'},
+  {rank:74,name:'Joshua H',amount:499,pct:'0.40%',url:'https://www.worldsgreatestshave.com/fundraisers/joshuah/2026'},
+  {rank:75,name:'Digby S',amount:498,pct:'0.40%',url:'https://www.worldsgreatestshave.com/fundraisers/digbys/2026'},
+  {rank:76,name:'Reyaan Prasad',amount:490,pct:'0.39%',url:'https://www.worldsgreatestshave.com/fundraisers/reyaanprasad/2026'},
+  {rank:77,name:'Jerry P',amount:469,pct:'0.37%',url:'https://www.worldsgreatestshave.com/fundraisers/jerryp/2026'},
+  {rank:78,name:'Barney T',amount:438,pct:'0.35%',url:'https://www.worldsgreatestshave.com/fundraisers/barneyt/2026'},
+  {rank:79,name:'Aman Qadri',amount:435,pct:'0.35%',url:'https://www.worldsgreatestshave.com/fundraisers/amanqadri/2026'},
+  {rank:80,name:'Frederick L',amount:433,pct:'0.34%',url:'https://www.worldsgreatestshave.com/fundraisers/frederickl/2026'},
+  {rank:81,name:'Hunter O',amount:429,pct:'0.34%',url:'https://www.worldsgreatestshave.com/fundraisers/huntero/2026'},
+  {rank:82,name:'George G',amount:421,pct:'0.33%',url:'https://www.worldsgreatestshave.com/fundraisers/georgeg/2026'},
+  {rank:83,name:'Arthur B',amount:418,pct:'0.33%',url:'https://www.worldsgreatestshave.com/fundraisers/arthurb/2026'},
+  {rank:84,name:'Boren C',amount:384,pct:'0.30%',url:'https://www.worldsgreatestshave.com/fundraisers/borenc/2026'},
+  {rank:85,name:'Zayn Cheema',amount:377,pct:'0.30%',url:'https://www.worldsgreatestshave.com/fundraisers/zayncheema/2026'},
+  {rank:86,name:'Inni Jurd',amount:342,pct:'0.27%',url:'https://www.worldsgreatestshave.com/fundraisers/innijurd/2026'},
+  {rank:87,name:'Ariyan R',amount:340,pct:'0.27%',url:'https://www.worldsgreatestshave.com/fundraisers/ariyanr/2026'},
+  {rank:88,name:'Tony L',amount:326,pct:'0.26%',url:'https://www.worldsgreatestshave.com/fundraisers/tonyl/2026'},
+  {rank:89,name:'Rayan Q',amount:324,pct:'0.26%',url:'https://www.worldsgreatestshave.com/fundraisers/rayanq/2026'},
+  {rank:90,name:'Thomas G',amount:320,pct:'0.25%',url:'https://www.worldsgreatestshave.com/fundraisers/thomasg/2026'},
+  {rank:91,name:'Oliver L',amount:319,pct:'0.25%',url:'https://www.worldsgreatestshave.com/fundraisers/oliverl/2026'},
+  {rank:92,name:'Owen M',amount:317,pct:'0.25%',url:'https://www.worldsgreatestshave.com/fundraisers/owenm/2026'},
+  {rank:93,name:'Remy L',amount:309,pct:'0.25%',url:'https://www.worldsgreatestshave.com/fundraisers/remyl/2026'},
+  {rank:94,name:'Nicholas W',amount:307,pct:'0.24%',url:'https://www.worldsgreatestshave.com/fundraisers/nicholasw/2026'},
+  {rank:95,name:'Arran R',amount:305,pct:'0.24%',url:'https://www.worldsgreatestshave.com/fundraisers/arranr/2026'},
+  {rank:96,name:'Tian G',amount:302,pct:'0.24%',url:'https://www.worldsgreatestshave.com/fundraisers/tiang/2026'},
+  {rank:97,name:'Elliot S (2)',amount:271,pct:'0.22%',url:'https://www.worldsgreatestshave.com/fundraisers/elliots2/2026'},
+  {rank:98,name:'Macarthur Arnott',amount:270,pct:'0.21%',url:'https://www.worldsgreatestshave.com/fundraisers/macarthur/2026'},
+  {rank:99,name:'Charlie B',amount:264,pct:'0.21%',url:'https://www.worldsgreatestshave.com/fundraisers/charlieb/2026'},
+  {rank:100,name:'Elvin C',amount:258,pct:'0.20%',url:'https://www.worldsgreatestshave.com/fundraisers/elvinc/2026'},
+  {rank:101,name:'Yisa L',amount:250,pct:'0.20%',url:'https://www.worldsgreatestshave.com/fundraisers/yisal/2026'},
+  {rank:102,name:'Damon Y',amount:243,pct:'0.19%',url:'https://www.worldsgreatestshave.com/fundraisers/damony/2026'},
+  {rank:103,name:'Shafin Azad',amount:230,pct:'0.18%',url:'https://www.worldsgreatestshave.com/fundraisers/shafinazad/2026'},
+  {rank:104,name:'Julian K',amount:223,pct:'0.18%',url:'https://www.worldsgreatestshave.com/fundraisers/juliank/2026'},
+  {rank:105,name:'Redson C',amount:216,pct:'0.17%',url:'https://www.worldsgreatestshave.com/fundraisers/redsonc/2026'},
+  {rank:106,name:'Xavier C',amount:212,pct:'0.17%',url:'https://www.worldsgreatestshave.com/fundraisers/xavierc/2026'},
+  {rank:107,name:'Lucas D',amount:197,pct:'0.16%',url:'https://www.worldsgreatestshave.com/fundraisers/lucasd/2026'},
+  {rank:108,name:'Sean Lin',amount:192,pct:'0.15%',url:'https://www.worldsgreatestshave.com/fundraisers/seanlin/2026'},
+  {rank:109,name:'Harry C',amount:167,pct:'0.13%',url:'https://www.worldsgreatestshave.com/fundraisers/harryc/2026'},
+  {rank:110,name:'Keaton P',amount:161,pct:'0.13%',url:'https://www.worldsgreatestshave.com/fundraisers/keatonp/2026'},
+  {rank:111,name:'Darren Li',amount:159,pct:'0.13%',url:'https://www.worldsgreatestshave.com/fundraisers/darrenli/2026'},
+  {rank:112,name:'Liam W',amount:155,pct:'0.12%',url:'https://www.worldsgreatestshave.com/fundraisers/liamw/2026'},
+  {rank:113,name:'Hunter Y',amount:127,pct:'0.10%',url:'https://www.worldsgreatestshave.com/fundraisers/huntery/2026'},
+  {rank:114,name:'Aarav K',amount:120,pct:'0.10%',url:'https://www.worldsgreatestshave.com/fundraisers/aaravk/2026'},
+  {rank:115,name:'Hayden Y',amount:119,pct:'0.09%',url:'https://www.worldsgreatestshave.com/fundraisers/haydeny/2026'},
+  {rank:116,name:'Ryan W',amount:115,pct:'0.09%',url:'https://www.worldsgreatestshave.com/fundraisers/ryanw/2026'},
+  {rank:117,name:'Josh K (2)',amount:115,pct:'0.09%',url:'https://www.worldsgreatestshave.com/fundraisers/joshk2/2026'},
+  {rank:118,name:'Joshua Li',amount:102,pct:'0.08%',url:'https://www.worldsgreatestshave.com/fundraisers/joshuali/2026'},
+  {rank:119,name:'Ollie R',amount:102,pct:'0.08%',url:'https://www.worldsgreatestshave.com/fundraisers/ollier/2026'},
+  {rank:120,name:'Declan H',amount:101,pct:'0.08%',url:'https://www.worldsgreatestshave.com/fundraisers/declanh/2026'},
+];
+
+
+// ─── LIVE DATA CONFIG ────────────────────────────────────
+const API_URL = 'https://26-ebon.vercel.app/api/fundraiser';
+const REFRESH_MS = 5 * 60 * 1000; // refresh every 5 minutes
+
+// Fallback values shown while loading / if API fails
+let TOTAL  = 125996;
+let GOAL   = 130000;
+let RECORD = 123912;
+let MEMBERS_LIVE = MEMBERS; // starts with hardcoded data, replaced on fetch
+
+const SHAVE_DAY=new Date('2026-03-13T09:00:00+11:00');
+const fmt=n=>'$'+Math.round(n).toLocaleString('en-AU');
+const pad=n=>String(n).padStart(2,'0');
+
+// ─── TICKER ───────────────────────────────────────────────
+function buildTicker(){
+  const top=[...MEMBERS_LIVE].slice(0,6);
+  const items=[
+    ...top.map(m=>`🏅 <strong>${m.name}</strong> — <span class="amt">${fmt(m.amount)}</span>`),
+    `🏆 <strong>SCHOOL RECORD BROKEN</strong> — New record: $125,996 🎉`,
+    `🎯 Only ${fmt(GOAL-TOTAL)} to $130k — one day left, let's go`,
+    `✂️ Shave Day is TOMORROW — Friday 13 March 2026`,
+    `💙 Every dollar counts — donate to a mate tonight`,
+    `📈 Smashed $100k goal + broken school record`,
+    `170+ Knox fundraisers — ranked #1 school in NSW`,
+  ];
+  const doubled=[...items,...items];
+  document.getElementById('tickerInner').innerHTML=doubled.map(i=>`<span class="ti">${i}</span>`).join('');
+}
+
+// ─── CHART ────────────────────────────────────────────────
+const chartLabels=['7/2','8/2','9/2','10/2','11/2','12/2','13/2','14/2','15/2','16/2','17/2','18/2','19/2','20/2','21/2','22/2','23/2','24/2','25/2','26/2','27/2','28/2','29/2','1/3','2/3','3/3','4/3','5/3','6/3','7/3','8/3','9/3','10/3','11/3','12/3','13/3 ✂️'];
+const d2024=[7860,500,2274,5426,6045,7384,8817,11169,12831,14127,14557,15805,17764,18000,18334,19333,23891,24584,27574,28801,30100,34492,38875,39941,41035,44341,48970,50703,54110,56406,59007,63916,66563,69563,71563,81647];
+const d2025=[0,2000,5000,6000,10000,11000,11500,13000,16000,20000,21000,24000,26000,29000,33000,40208,42000,44000,46000,50000,52000,55000,56000,61538,64000,66000,68000,73000,77490,78450,81000,83000,87000,96000,100000,108000];
+const d2026=[null,null,null,null,250,1000,3253,4800,7812,11124,13765,23404,27304,35495,43167,46773,53000,58000,65000,76513,79098,80804,82000,83000,86000,90956,95000,98000,100000,103000,105000,108000,110643,113000,125996,null];
+const d130k=Array(36).fill(130000);
+
+function buildChart(){
+  const ctx=document.getElementById('lineChart').getContext('2d');
+  const g=ctx.createLinearGradient(0,0,0,360);
+  g.addColorStop(0,'rgba(34,211,238,.18)');g.addColorStop(1,'rgba(34,211,238,0)');
+  new Chart(ctx,{
+    type:'line',
+    data:{
+      labels:chartLabels,
+      datasets:[
+        {label:'2024',data:d2024,borderColor:'rgba(107,114,128,.7)',backgroundColor:'transparent',borderWidth:1.5,pointRadius:0,pointHoverRadius:4,tension:.4},
+        {label:'2025',data:d2025,borderColor:'#818cf8',backgroundColor:'rgba(129,140,248,.06)',borderWidth:2,pointRadius:0,pointHoverRadius:4,tension:.4,fill:false},
+        {label:'2026',data:d2026,borderColor:'#22d3ee',backgroundColor:g,borderWidth:3,pointRadius:0,pointHoverRadius:5,tension:.4,fill:true,spanGaps:false},
+        {label:'$130k Target',data:d130k,borderColor:'rgba(255,215,0,.35)',backgroundColor:'transparent',borderWidth:1.5,borderDash:[6,4],pointRadius:0,tension:0},
+      ]
+    },
+    options:{
+      responsive:true,interaction:{mode:'index',intersect:false},
+      plugins:{
+        legend:{display:false},
+        tooltip:{backgroundColor:'#0d1628',borderColor:'rgba(34,211,238,.2)',borderWidth:1,titleColor:'#9ca3af',bodyColor:'#fff',padding:12,
+          callbacks:{label:c=>{if(c.raw==null)return null;return` ${c.dataset.label}: ${fmt(c.raw)}`}}}
+      },
+      scales:{
+        x:{grid:{color:'rgba(255,255,255,.04)'},ticks:{color:'#4b5563',font:{size:10},maxRotation:45,autoSkip:true,maxTicksLimit:18},border:{color:'rgba(255,255,255,.04)'}},
+        y:{grid:{color:'rgba(255,255,255,.04)'},ticks:{color:'#4b5563',font:{size:11},callback:v=>'$'+Math.round(v/1000)+'k'},border:{color:'rgba(255,255,255,.04)'}}
+      }
+    }
+  });
+}
+
+// ─── FUN STATS ───────────────────────────────────────────
+function buildFunStats(){
+  const recordAbove=Math.max(0,TOTAL-RECORD);
+  const items=[
+    {icon:'☕',val:Math.round(TOTAL/5).toLocaleString(),lbl:'Cups of coffee worth of research funded',col:'var(--orange)'},
+    {icon:'🍕',val:Math.round(TOTAL/20).toLocaleString(),lbl:'Pizzas — but spent on curing cancer instead',col:'var(--red)'},
+    {icon:'💸',val:fmt(Math.round(TOTAL/MEMBERS_LIVE.length)),lbl:'Average raised per Knox fundraiser',col:'var(--cyan)'},
+    {icon:'🧬',val:'27 min',lbl:'How often someone is diagnosed with blood cancer in Australia',col:'var(--pink)'},
+    {icon:'🏆',val:fmt(recordAbove),lbl:'Above the old Knox school record — we\'re in new territory',col:'var(--gold)'},
+    {icon:'📈',val:'$8,297',lbl:'Raised in the last 24 hours — the final sprint is real',col:'var(--green)'},
+    {icon:'🎯',val:fmt(GOAL-TOTAL),lbl:'Left to hit $130k — this is genuinely within reach',col:'var(--blue2)'},
+    {icon:'🏫',val:'#1 NSW',lbl:'Knox is the top school fundraising team in the state',col:'var(--purple)'},
+  ];
+  document.getElementById('funGrid').innerHTML=items.map(i=>`
+    <div class="fun-card" style="border-color:rgba(255,255,255,.07)">
+      <span class="fun-icon">${i.icon}</span>
+      <div class="fun-val" style="color:${i.col}">${i.val}</div>
+      <div class="fun-lbl">${i.lbl}</div>
+    </div>`).join('');
+}
+
+// ─── HOT RACES ───────────────────────────────────────────
+function buildRaces(){
+  const M=MEMBERS_LIVE;
+  if(M.length<24)return; // not enough data
+  const races=[
+    {label:'#1 vs #2',icon:'🔥',cls:'rc-red',col:'var(--red)',a:M[0],b:M[1]},
+    {label:'#6 vs #7',icon:'⚡',cls:'rc-orange',col:'var(--orange)',a:M[5],b:M[6]},
+    {label:'#8 vs #9',icon:'💜',cls:'rc-purple',col:'var(--purple)',a:M[7],b:M[8]},
+    {label:'#9 vs #10',icon:'💎',cls:'rc-cyan',col:'var(--cyan)',a:M[8],b:M[9]},
+    {label:'#22 vs #23',icon:'😱',cls:'rc-pink',col:'var(--pink)',a:M[21],b:M[22]},
+    {label:'#23 vs #24',icon:'🏁',cls:'rc-gold',col:'var(--gold)',a:M[22],b:M[23]},
+  ];
+  document.getElementById('racesGrid').innerHTML=races.map(r=>{
+    const gap=r.a.amount-r.b.amount;
+    const gapPct=Math.max(0.5,(gap/r.a.amount)*100).toFixed(1);
+    return`<div class="race-card ${r.cls}">
+      <div class="race-lbl" style="color:${r.col}">${r.icon} ${r.label}</div>
+      <div class="racer"><span class="racer-name">${r.a.rank<=3?['🥇','🥈','🥉'][r.a.rank-1]+' ':r.a.rank+'. '}${r.a.name}</span><span class="racer-amt top">${fmt(r.a.amount)}</span></div>
+      <div class="racer"><span class="racer-name">${r.b.rank}. ${r.b.name}</span><span class="racer-amt">${fmt(r.b.amount)}</span></div>
+      <div class="gap-bar-track"><div class="gap-bar-fill" style="background:${r.col};width:${gapPct}%"></div></div>
+      <div class="gap-txt">Gap: <span class="gap-val" style="color:${r.col}">${fmt(gap)}</span></div>
+    </div>`;
+  }).join('');
+}
+
+// ─── TOP 20 LEADERBOARD ──────────────────────────────────
+function buildLeaderboard(){
+  const top20=MEMBERS_LIVE.slice(0,20);
+  const maxAmt=top20[0].amount;
+  const medals=['🥇','🥈','🥉'];
+  const lb=document.getElementById('leaderboard');
+  lb.innerHTML=top20.map(m=>{
+    const rank=m.rank,rc=rank<=3?` r${rank}`:'';
+    const barCol=rank===1?'linear-gradient(90deg,var(--gold),rgba(255,215,0,.4))':rank===2?'linear-gradient(90deg,#C0C0C0,rgba(192,192,192,.3))':rank===3?'linear-gradient(90deg,#CD7F32,rgba(205,127,50,.3))':'linear-gradient(90deg,rgba(59,130,246,.4),rgba(34,211,238,.6))';
+    return`<div class="lb-row${rc}">
+      <div class="lb-rank">${rank<=3?medals[rank-1]:rank}</div>
+      <div>
+        <div class="lb-name">${m.name}</div>
+        <div class="lb-pct">${m.pct} of school total</div>
+        <a href="${m.url}" target="_blank" class="lb-link">Donate to ${m.name.split(' ')[0]} →</a>
+      </div>
+      <div class="lb-right"><div class="lb-amt">${fmt(m.amount)}</div></div>
+      <div class="lb-bar-row"><div class="lb-bar-track"><div class="lb-bar-fill" style="width:${(m.amount/maxAmt*100).toFixed(1)}%;background:${barCol}"></div></div></div>
+    </div>`;
+  }).join('');
+}
+
+// ─── ALL FUNDRAISERS $100+ ────────────────────────────────
+function buildAllFund(){
+  const fund100=MEMBERS_LIVE.filter(m=>m.amount>=100);
+  const maxAmt=fund100[0].amount;
+  document.getElementById('allFundCount').textContent=fund100.length;
+  document.getElementById('allFundInner').innerHTML=
+    fund100.map(m=>`
+      <div class="fund-item">
+        <div class="fund-rank">#${m.rank}</div>
+        <div class="fund-name">${m.name}</div>
+        <a href="${m.url}" target="_blank" class="fund-link">Donate →</a>
+        <div class="fund-amt">${fmt(m.amount)}</div>
+        <div class="fund-bar"><div class="fund-bar-fill" style="width:${(m.amount/maxAmt*100).toFixed(1)}%"></div></div>
+      </div>`).join('')+
+    `<div class="fund-count-note">${fund100.length} fundraisers have crossed $100 — find someone you know and add to their total.</div>`;
+}
+
+function toggleAllFund(){
+  const inner=document.getElementById('allFundInner');
+  const arrow=document.getElementById('toggleArrow');
+  const open=inner.classList.toggle('open');
+  arrow.classList.toggle('open',open);
+  arrow.textContent=open?'↑':'↓';
+}
+
+// ─── META RENDER ─────────────────────────────────────────
+function renderMeta(){
+  document.getElementById('amtDisplay').textContent=TOTAL.toLocaleString('en-AU');
+  const pct=(TOTAL/GOAL)*100;
+  setTimeout(()=>document.getElementById('progressFill').style.width=Math.min(pct,100)+'%',200);
+  document.getElementById('pctDisplay').textContent=pct.toFixed(1)+'% to $130k';
+  document.getElementById('statNeeded').textContent=fmt(Math.max(0,GOAL-TOTAL));
+  document.getElementById('statDays').textContent=Math.floor(Math.max(0,SHAVE_DAY-new Date())/86400000);
+  const gap125=Math.max(0,125000-TOTAL);
+  document.getElementById('ms125Gap').textContent=gap125>0?`Only ${fmt(gap125)} away — give it everything!`:'✓ Unlocked! He\'s shaving! 🎉';
+  document.getElementById('ms130Gap').textContent=TOTAL>=130000?'✓ $130k achieved — incredible!':fmt(Math.max(0,130000-TOTAL))+' to go — this is within reach RIGHT NOW!';
+  const recEl=document.getElementById('recordGap');
+  if(recEl) recEl.textContent=TOTAL>=RECORD?fmt(TOTAL-RECORD)+' above the old record 🏆':'Only '+fmt(RECORD-TOTAL)+' from history';
+}
+
+// ─── COUNTDOWN ───────────────────────────────────────────
+function tick(){
+  const diff=Math.max(0,SHAVE_DAY-new Date());
+  document.getElementById('cdD').textContent=pad(Math.floor(diff/86400000));
+  document.getElementById('cdH').textContent=pad(Math.floor(diff%86400000/3600000));
+  document.getElementById('cdM').textContent=pad(Math.floor(diff%3600000/60000));
+  document.getElementById('cdS').textContent=pad(Math.floor(diff%60000/1000));
+}
+setInterval(tick,1000);tick();
+
+// ─── TOAST ───────────────────────────────────────────────
+function toast(msg){
+  const t=document.getElementById('toast');
+  t.textContent=msg;t.classList.add('show');
+  setTimeout(()=>t.classList.remove('show'),4500);
+}
+
+// ─── TEAMS LEADERBOARD ───────────────────────────────────
+const TEAMS=[
+  {rank:1,name:'Knox Grammar 2026',raised:125996,note:'That\'s us — #1 in NSW 🏆',knox:true},
+  {rank:2,name:'Wynn Jones Trinity Grammar School 2026',raised:106239,note:'NSW · School'},
+  {rank:3,name:'Merewether High School 2026',raised:77723,note:'NSW · School'},
+  {rank:4,name:'Hills Grammar – Class of 2026',raised:65794,note:'NSW · School'},
+  {rank:5,name:'Calrossy Anglican School',raised:48668,note:'NSW · School'},
+  {rank:6,name:'Team Leo',raised:37004,note:'NSW · Team'},
+  {rank:7,name:'Team Micky',raised:34662,note:'NSW · Team'},
+  {rank:8,name:'Engadine High School',raised:34589,note:'NSW · School'},
+  {rank:9,name:'2026 Pymble Ladies\' College Senior School',raised:25870,note:'NSW · School'},
+  {rank:10,name:'North Sydney Boys High School 2026',raised:25040,note:'NSW · School'},
+];
+
+function buildTeamsLeaderboard(){
+  const knoxTotal = TOTAL; // always use live TOTAL for Knox
+  const maxRaised = knoxTotal;
+  const medals=['🥇','🥈','🥉'];
+  const rc=r=>r===1?' tr1':r===2?' tr2':r===3?' tr3':'';
+  document.getElementById('teamsLeaderboard').innerHTML=TEAMS.map(t=>{
+    const amt = t.knox ? knoxTotal : t.raised;
+    return`<div class="team-row${rc(t.rank)}">
+      <div class="team-rank-big">${t.rank<=3?medals[t.rank-1]:t.rank}</div>
+      <div>
+        <div class="team-name-main">${t.name}${t.knox?'<span class="knox-badge">Knox</span>':''}</div>
+        <div class="team-name-note">${t.note}</div>
+      </div>
+      <div class="team-amt-big">${'$'+amt.toLocaleString('en-AU')}</div>
+      <div class="team-bar-row"><div class="team-bar-track"><div class="team-bar-fill" style="width:${(amt/maxRaised*100).toFixed(1)}%"></div></div></div>
+    </div>`;
+  }).join('');
+  const gapEl=document.getElementById('teamsGap');
+  if(gapEl) gapEl.textContent='$'+(knoxTotal-TEAMS[1].raised).toLocaleString('en-AU');
+}
+
+// ─── LIVE FETCH & REFRESH ────────────────────────────────
+function rebuildAll(){
+  buildTicker();
+  renderMeta();
+  buildLeaderboard();
+  buildAllFund();
+  buildFunStats();
+  buildRaces();
+  buildTeamsLeaderboard();
+}
+
+async function fetchLiveData(){
+  const chip = document.querySelector('.updated-chip');
+  if(chip) chip.innerHTML = 'Refreshing… <span>⟳</span>';
+
+  try {
+    // cache:'no-store' forces a fresh network request — bypasses any stale browser cache
+    const res = await fetch(API_URL, { cache: 'no-store' });
+    if(!res.ok) throw new Error(`API returned ${res.status}`);
+
+    const data = await res.json();
+    if(data.error) throw new Error(data.error);
+
+    let liveDataLoaded = false;
+
+    // Only update globals if the API actually returned real parsed numbers
+    if(data.raised && data.raised > 0){ TOTAL = data.raised; liveDataLoaded = true; }
+    if(data.goal   && data.goal   > 0){ GOAL  = data.goal; }
+
+    // Map API members → same shape the site uses
+    if(data.members && data.members.length > 0){
+      const apiTotal = data.raised || TOTAL;
+      MEMBERS_LIVE = data.members.map((m, i) => ({
+        rank:   i + 1,
+        name:   m.name,
+        amount: m.raised,
+        pct:    ((m.raised / apiTotal) * 100).toFixed(2) + '%',
+        url:    `https://www.worldsgreatestshave.com/fundraisers/${m.slug}/2026`,
+      }));
+      liveDataLoaded = true;
+    }
+
+    rebuildAll();
+
+    const now = new Date().toLocaleTimeString('en-AU',{hour:'2-digit',minute:'2-digit'});
+
+    if(liveDataLoaded){
+      if(chip) chip.innerHTML = `Live — updated <span>${now}</span>`;
+      const lu = document.getElementById('lastUpdated');
+      if(lu) lu.textContent = `Live data · refreshed ${now}`;
+
+      // Animate the hero amount
+      const disp = document.getElementById('amtDisplay');
+      if(disp){
+        disp.style.transition = 'opacity .3s';
+        disp.style.opacity = '0';
+        setTimeout(()=>{ disp.textContent = TOTAL.toLocaleString('en-AU'); disp.style.opacity='1'; }, 300);
+      }
+    } else {
+      // API responded OK but scraper found nothing (likely SPA rendering issue)
+      if(chip) chip.innerHTML = `Showing saved data — <span>live fetch pending</span>`;
+      console.warn('API returned OK but no live data parsed. Debug:', data._debug);
+    }
+
+  } catch(err){
+    console.warn('Live data fetch failed, using fallback data:', err.message);
+    if(chip) chip.innerHTML = `Updated regularly — <span>check back soon</span>`;
+    rebuildAll();
+  }
+}
+
+// ─── INIT ────────────────────────────────────────────────
+// 1. Render immediately with hardcoded fallback data
+buildChart();
+rebuildAll();
+setTimeout(()=>toast('🏆 RECORD BROKEN — Knox $125,996 — $4k to $130k!'),800);
+
+// 2. Then fetch live data (replaces fallback if successful)
+fetchLiveData();
+
+// 3. Auto-refresh every 5 minutes
+setInterval(fetchLiveData, REFRESH_MS);
+</script>
+</body>
+</html>
